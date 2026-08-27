@@ -86,12 +86,19 @@ export default async function LiveFeed() {
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-2.5 md:grid-cols-2">
-          {rows.map((row) => (
+          {rows.map((row, i) => (
             <div
               key={row.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3.5"
+              className="fade-up group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-border bg-surface px-4 py-3.5"
+              style={{ animationDelay: `${i * 90}ms` }}
             >
-              <div className="min-w-0">
+              {/* 카드가 나타날 때 왼쪽에서 오른쪽으로 살짝 스치는 하이라이트 */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-tint/60 to-transparent"
+                style={{ animation: `shimmer 1.1s ease-out ${i * 90 + 120}ms forwards` }}
+              />
+              <div className="relative min-w-0">
                 <p className="text-[13.5px] font-semibold">
                   {toRegionLabel(row.address)} · {EVENT_TYPE_LABEL[row.event_type]}
                 </p>
@@ -99,7 +106,7 @@ export default async function LiveFeed() {
                   {QUANTITY_RANGE_LABEL[row.quantity_range]} · {toRelativeTime(row.created_at)}
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-brand-tint px-2.5 py-1 text-[11.5px] font-semibold text-brand-dark">
+              <span className="relative shrink-0 rounded-full bg-brand-tint px-2.5 py-1 text-[11.5px] font-semibold text-brand-dark">
                 {row.customer_payback_amount > 0
                   ? formatKRW(row.customer_payback_amount)
                   : "견적 진행중"}
