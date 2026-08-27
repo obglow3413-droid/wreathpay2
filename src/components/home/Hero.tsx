@@ -9,7 +9,7 @@ export default function Hero() {
         <div className="fade-up">
           <p className="text-[13px] font-semibold text-[#00A878]">화환 버리기 전에</p>
 
-          <h1 className="mt-3 text-[38px] font-extrabold leading-[1.15] tracking-tight text-[#171A18] md:mt-4 md:text-[58px]">
+          <h1 className="mt-3 break-keep text-[30px] font-extrabold leading-[1.25] tracking-tight text-[#171A18] md:mt-4 md:text-[58px] md:leading-[1.15]">
             버려지는 화환이
             <br />
             현금으로 돌아옵니다.
