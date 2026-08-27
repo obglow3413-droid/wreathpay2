@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 const TABLE_ROWS = [
   { qty: "1~4개", funeral: "무료회수 가능 여부 확인", celebration: "무료회수 가능 여부 확인" },
   { qty: "5~9개", funeral: "1만~3만원", celebration: "무료회수~2만원" },
@@ -48,13 +46,6 @@ export default function WreathTypes() {
           화환의 상태와 수거지역에 따라 실제 금액은 달라질 수 있습니다. 재사용 가치가 수거비용보다
           낮은 경우에는 페이백 없이 무료회수만 가능하며, 최종 금액은 현장 확인 후 확정됩니다.
         </p>
-
-        <Link
-          href="/estimate"
-          className="hover-lift mt-7 flex h-13 items-center justify-center rounded-xl bg-brand px-6 text-[15px] font-semibold text-white shadow-[0_10px_24px_-8px_rgba(0,168,120,0.45)] md:inline-flex md:w-fit"
-        >
-          내 화환 예상금액 확인하기
-        </Link>
       </div>
     </section>
   );
