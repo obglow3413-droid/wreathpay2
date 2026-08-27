@@ -33,8 +33,11 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isLoginPage = pathname === "/admin/login";
+  // 비밀번호 재설정은 이메일 링크로 막 들어온 상태(세션이 브라우저에서 막 생성되는 중)라
+  // 서버가 아직 로그인 상태를 못 볼 수 있어, 로그인 페이지처럼 예외로 둡니다.
+  const isResetPasswordPage = pathname === "/admin/reset-password";
 
-  if (pathname.startsWith("/admin") && !isLoginPage && !user) {
+  if (pathname.startsWith("/admin") && !isLoginPage && !isResetPasswordPage && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
