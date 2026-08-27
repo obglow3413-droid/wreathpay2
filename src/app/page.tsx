@@ -7,6 +7,7 @@ import TrustIndicators from "@/components/home/TrustIndicators";
 import ValueSection from "@/components/home/ValueSection";
 import LiveFeed from "@/components/home/LiveFeed";
 import BulkSection from "@/components/home/BulkSection";
+import FloatingPaybackCta from "@/components/home/FloatingPaybackCta";
 import Reveal from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
@@ -37,6 +38,7 @@ export default function HomePage() {
         </Reveal>
       </main>
       <SiteFooter />
+      <FloatingPaybackCta />
       <AppBottomNav />
     </>
   );
