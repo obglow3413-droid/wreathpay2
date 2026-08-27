@@ -16,6 +16,9 @@ export default function SiteFooter() {
           고객센터 010-5333-3413 · 운영시간 평일 09:00 - 18:00 (주말·공휴일 휴무)
         </p>
         <p className="mt-3 space-x-3">
+          <Link href="/about" className="underline hover:text-muted">
+            서비스소개
+          </Link>
           <Link href="/driver" className="underline hover:text-muted">
             수거기사 모집
           </Link>
