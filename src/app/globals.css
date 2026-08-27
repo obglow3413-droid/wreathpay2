@@ -1,17 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #14171a;
-  --muted: #6b7280;
-  --muted-light: #9aa1ac;
-  --border: #e7e9ec;
-  --surface: #f7f8f9;
+  --background: #f7f9f7;
+  --foreground: #171a18;
+  --muted: #616965;
+  --muted-light: #8a908c;
+  --border: #e4e9e6;
+  --surface: #f7f9f7;
+  --white: #ffffff;
+  --error: #e5484d;
 
-  /* 포인트 컬러: 꽃깞의 유일한 브랜드 컬러 (신뢰 + 현금 정산의 뉘앙스) */
-  --brand: #0f9d68;
-  --brand-dark: #0b7d53;
-  --brand-tint: #e6f6ee;
+  /* 포인트 컬러: 꽃깞 KKOTGAP 브랜드 컬러 (선명한 민트 그린) */
+  --brand: #00a878;
+  --brand-dark: #008f68;
+  --brand-tint: #e3f6ef;
 }
 
 @theme inline {
@@ -21,6 +23,8 @@
   --color-muted-light: var(--muted-light);
   --color-border: var(--border);
   --color-surface: var(--surface);
+  --color-white: var(--white);
+  --color-error: var(--error);
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
   --color-brand-tint: var(--brand-tint);
@@ -46,7 +50,7 @@ html {
 }
 
 body {
-  background: var(--background);
+  background: var(--surface);
   color: var(--foreground);
   font-family: var(--font-sans);
   letter-spacing: -0.015em;
@@ -98,6 +102,15 @@ a, button {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
 
