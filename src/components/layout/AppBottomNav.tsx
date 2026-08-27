@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -38,8 +37,9 @@ export default function AppBottomNav() {
   // 시세조회 버튼: 이미 홈에 있으면 직접 스크롤, 다른 페이지면 홈으로 이동 후 스크롤
   function handlePricingClick(e: React.MouseEvent) {
     e.preventDefault();
-    if (pathname === "/") {
-      document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const target = document.getElementById("pricing");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       router.push("/#pricing");
     }
