@@ -3,6 +3,7 @@ import AppTopBar from "@/components/home/AppTopBar";
 import AppBottomNav from "@/components/layout/AppBottomNav";
 import SiteFooter from "@/components/layout/SiteFooter";
 import Hero from "@/components/home/Hero";
+import TrustIndicators from "@/components/home/TrustIndicators";
 import ValueSection from "@/components/home/ValueSection";
 import WreathTypes from "@/components/home/WreathTypes";
 import LiveFeed from "@/components/home/LiveFeed";
@@ -25,14 +26,15 @@ export default function HomePage() {
       <AppTopBar />
       <main className="flex-1 pb-24">
         <Hero />
+        <TrustIndicators />
         <Reveal>
           <ValueSection />
         </Reveal>
         <Reveal>
-          <WreathTypes />
+          <LiveFeed />
         </Reveal>
         <Reveal>
-          <LiveFeed />
+          <WreathTypes />
         </Reveal>
         <Reveal>
           <BulkSection />
