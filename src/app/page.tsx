@@ -5,7 +5,6 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import Hero from "@/components/home/Hero";
 import TrustIndicators from "@/components/home/TrustIndicators";
 import ValueSection from "@/components/home/ValueSection";
-import WreathTypes from "@/components/home/WreathTypes";
 import LiveFeed from "@/components/home/LiveFeed";
 import BulkSection from "@/components/home/BulkSection";
 import Reveal from "@/components/ui/Reveal";
@@ -32,9 +31,6 @@ export default function HomePage() {
         </Reveal>
         <Reveal>
           <LiveFeed />
-        </Reveal>
-        <Reveal>
-          <WreathTypes />
         </Reveal>
         <Reveal>
           <BulkSection />
