@@ -48,12 +48,21 @@ export default function Hero() {
               등급별 시세도 함께 확인할 수 있어요.
             </p>
 
-            <div className="mt-6 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#E3E8E5] bg-[#F7F9F7] px-6 py-10 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E3F6EF] text-[#00A878]">
-                <Camera size={24} strokeWidth={1.8} />
+            <div className="relative mt-6 flex flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#E3E8E5] bg-[#F7F9F7] px-6 py-10 text-center">
+              {/* 은은하게 반복해서 스치는 반짝임 */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70 to-transparent"
+                style={{ animation: "shimmer 2.6s ease-in-out infinite" }}
+              />
+              <div className="relative flex h-12 w-12 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00A878]/30" />
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#E3F6EF] text-[#00A878]">
+                  <Camera size={24} strokeWidth={1.8} />
+                </span>
               </div>
-              <p className="mt-3 text-[14.5px] font-semibold text-[#171A18]">화환 사진 올리기</p>
-              <p className="mt-1 text-[12px] text-[#7A837E]">JPG, PNG · 최대 10MB</p>
+              <p className="relative mt-3 text-[14.5px] font-semibold text-[#171A18]">화환 사진 올리기</p>
+              <p className="relative mt-1 text-[12px] text-[#7A837E]">JPG, PNG · 최대 10MB</p>
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-1 text-[12.5px] font-medium text-[#59615D]">
