@@ -7,7 +7,7 @@ export default function Hero() {
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:grid md:min-h-[600px] md:grid-cols-[55fr_45fr] md:items-center md:gap-14 md:px-8 md:py-0">
         {/* 왼쪽: 서비스 소개 문구 + CTA */}
         <div className="fade-up">
-          <p className="text-[13px] font-semibold text-[#00A878]">화환 버리기 전에</p>
+          <p className="text-[13px] font-semibold text-[#00A878]">세상의 모든 화환을 페이백해드립니다!</p>
 
           <h1 className="mt-3 break-keep text-[30px] font-extrabold leading-[1.25] tracking-tight text-[#171A18] md:mt-4 md:text-[58px] md:leading-[1.15]">
             버려지는 화환이
@@ -26,7 +26,7 @@ export default function Hero() {
               href="/estimate"
               className="hover-lift flex h-[58px] w-full items-center justify-center rounded-[14px] bg-[#00A878] px-7 text-[17px] font-bold text-white hover:bg-[#008F68] md:inline-flex md:w-auto"
             >
-              내 화환 가격 확인하기
+              지금바로 페이백 받기
             </Link>
           </div>
 
