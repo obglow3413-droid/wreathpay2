@@ -29,7 +29,7 @@ export default function Reveal({
           observer.disconnect();
         }
       },
-      { threshold: 0.12 }
+      { threshold: 0.15 }
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -38,8 +38,8 @@ export default function Reveal({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+      className={`transition-all duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none motion-reduce:transform-none motion-reduce:opacity-100 ${
+        visible ? "translate-y-0 opacity-100" : "translate-y-[18px] opacity-0"
       } ${className}`}
     >
       {children}
