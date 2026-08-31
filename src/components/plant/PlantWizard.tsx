@@ -504,14 +504,17 @@ function AnalyzingScreen({ previewSrc }: { previewSrc?: string }) {
       </p>
       <div className="mt-6 flex items-center gap-1.5">
         <span
-          className="h-2 w-2 animate-bounce rounded-full [animation-delay:-0.3s]"
-          style={{ backgroundColor: ACCENT }}
+          className="dot-fade h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: ACCENT, animationDelay: "0ms" }}
         />
         <span
-          className="h-2 w-2 animate-bounce rounded-full [animation-delay:-0.15s]"
-          style={{ backgroundColor: ACCENT }}
+          className="dot-fade h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: ACCENT, animationDelay: "200ms" }}
         />
-        <span className="h-2 w-2 animate-bounce rounded-full" style={{ backgroundColor: ACCENT }} />
+        <span
+          className="dot-fade h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: ACCENT, animationDelay: "400ms" }}
+        />
       </div>
     </div>
   );
