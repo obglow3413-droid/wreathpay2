@@ -12,6 +12,7 @@ import {
 import { formatKRW } from "@/lib/pricing";
 import RequestFilters from "@/components/admin/RequestFilters";
 import RequestQuickActions from "@/components/admin/RequestQuickActions";
+import PlantQuickActions from "@/components/admin/PlantQuickActions";
 import DeleteRequestButton from "@/components/admin/DeleteRequestButton";
 
 interface SearchParams {
@@ -33,6 +34,7 @@ interface PlantRow {
   customer_name: string;
   customer_phone: string;
   status: string;
+  payback_amount: number;
   created_at: string;
 }
 
@@ -47,7 +49,7 @@ interface UnifiedRow {
   category: string; // 행사종류 또는 화분종류
   region: string;
   quantityLabel: string;
-  paybackAmount: number | null; // 화분은 계산 로직이 없어 null
+  paybackAmount: number;
   scheduleLabel: string;
   wreathRaw?: EstimateRequestRow;
   plantStatus?: string;
@@ -83,7 +85,7 @@ async function getPlantRequests(filters: SearchParams): Promise<PlantRow[]> {
   let query = supabase
     .from("plant_collection_requests")
     .select(
-      "id, request_no, plant_type, quantity, plant_size, pickup_address, desired_pickup_date, desired_pickup_time_slot, customer_name, customer_phone, status, created_at"
+      "id, request_no, plant_type, quantity, plant_size, pickup_address, desired_pickup_date, desired_pickup_time_slot, customer_name, customer_phone, status, payback_amount, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -128,7 +130,7 @@ async function getUnifiedRows(filters: SearchParams): Promise<UnifiedRow[]> {
         category: EVENT_TYPE_LABEL[r.event_type as EventType],
         region: r.address?.split(" ").slice(0, 2).join(" ") ?? "-",
         quantityLabel: QUANTITY_RANGE_LABEL[r.quantity_range as QuantityRange],
-        paybackAmount: r.customer_payback_amount,
+        paybackAmount: r.customer_payback_amount ?? 0,
         scheduleLabel: `${r.pickup_date} · ${r.pickup_time_slot}`,
         wreathRaw: r,
       })),
@@ -142,7 +144,7 @@ async function getUnifiedRows(filters: SearchParams): Promise<UnifiedRow[]> {
         category: p.plant_type,
         region: p.pickup_address?.split(" ").slice(0, 2).join(" ") ?? "-",
         quantityLabel: `${p.quantity}개 · ${p.plant_size}`,
-        paybackAmount: null,
+        paybackAmount: p.payback_amount ?? 0,
         scheduleLabel: p.desired_pickup_date
           ? `${p.desired_pickup_date}${p.desired_pickup_time_slot ? " · " + p.desired_pickup_time_slot : ""}`
           : "-",
@@ -157,12 +159,6 @@ async function getUnifiedRows(filters: SearchParams): Promise<UnifiedRow[]> {
     return [];
   }
 }
-
-const PLANT_STATUS_LABEL: Record<string, string> = {
-  received: "접수",
-  confirmed: "확인완료",
-  collected: "회수완료",
-};
 
 export default async function AdminRequestsPage({
   searchParams,
@@ -244,9 +240,7 @@ export default async function AdminRequestsPage({
                 <td className="px-4 py-3">{r.category}</td>
                 <td className="px-4 py-3 text-muted">{r.region}</td>
                 <td className="px-4 py-3">{r.quantityLabel}</td>
-                <td className="px-4 py-3 tabular-nums">
-                  {r.paybackAmount !== null ? formatKRW(r.paybackAmount) : "-"}
-                </td>
+                <td className="px-4 py-3 tabular-nums">{formatKRW(r.paybackAmount)}</td>
                 <td className="px-4 py-3 text-muted">{r.scheduleLabel}</td>
                 <td className="px-4 py-3">
                   {r.kind === "wreath" && r.wreathRaw ? (
@@ -256,9 +250,11 @@ export default async function AdminRequestsPage({
                       customerPaybackAmount={r.wreathRaw.customer_payback_amount}
                     />
                   ) : (
-                    <span className="rounded-full bg-surface px-2.5 py-1 text-[11.5px] font-medium text-muted">
-                      {PLANT_STATUS_LABEL[r.plantStatus ?? "received"] ?? r.plantStatus}
-                    </span>
+                    <PlantQuickActions
+                      requestId={r.id}
+                      status={r.plantStatus ?? "received"}
+                      paybackAmount={r.paybackAmount}
+                    />
                   )}
                 </td>
                 <td className="px-4 py-3">
