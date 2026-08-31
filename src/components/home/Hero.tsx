@@ -45,8 +45,8 @@ const SERVICE_CONTENT: Record<
     cardTitle: "사진 올리고 회수 가능여부 확인하기",
     cardDesc: "화분 종류·크기별 조건도 함께 확인할 수 있어요.",
     uploadLabel: "화분 사진 올리기",
-    accent: "#0B6B4F",
-    accentBg: "#E6F2EC",
+    accent: "#8B5A2B",
+    accentBg: "#F3E8DD",
   },
 };
 
@@ -62,7 +62,7 @@ export default function Hero() {
           <div
             className="absolute inset-y-1 w-[calc(50%-4px)] rounded-full transition-transform duration-300 ease-out"
             style={{
-              backgroundColor: active === "wreath" ? "#00A878" : "#0B6B4F",
+              backgroundColor: active === "wreath" ? "#00A878" : "#8B5A2B",
               transform: active === "wreath" ? "translateX(0%)" : "translateX(calc(100% + 8px))",
             }}
           />
