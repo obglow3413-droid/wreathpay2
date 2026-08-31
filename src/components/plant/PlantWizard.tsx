@@ -104,8 +104,13 @@ export default function PlantWizard() {
   }
 
   function handleFiles(files: FileList | null) {
-    if (!files) return;
+    if (!files || files.length === 0) return;
+    const wasEmpty = images.length === 0;
     setImages((prev) => [...prev, ...Array.from(files)].slice(0, MAX_IMAGES));
+    // 처음 사진을 등록하는 순간이면, "다음" 버튼을 누르지 않아도 바로 분석 화면으로 진행
+    if (wasEmpty) {
+      goNext();
+    }
   }
   function removeImage(idx: number) {
     setImages((prev) => prev.filter((_, i) => i !== idx));
