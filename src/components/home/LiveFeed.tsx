@@ -130,8 +130,8 @@ export default async function LiveFeed() {
                     className="shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-bold"
                     style={
                       row.kind === "wreath"
-                        ? { backgroundColor: "#E3F6EF", color: "#00A878" }
-                        : { backgroundColor: "#F3E8DD", color: "#8B5A2B" }
+                        ? { backgroundColor: "#E7EBE4", color: "#102A22" }
+                        : { backgroundColor: "#E7EBE4", color: "#102A22" }
                     }
                   >
                     {row.kind === "wreath" ? "화환" : "화분"}
