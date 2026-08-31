@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import EstimateWizard from "@/components/estimate/EstimateWizard";
 import BackHeader from "@/components/layout/BackHeader";
+import SharedLinkBanner from "@/components/home/SharedLinkBanner";
 import type { EventType } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -13,9 +14,9 @@ const VALID_EVENT_TYPES: EventType[] = ["funeral", "wedding", "opening", "corpor
 export default async function EstimatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ bulk?: string; eventType?: string }>;
+  searchParams: Promise<{ bulk?: string; eventType?: string; source?: string }>;
 }) {
-  const { bulk, eventType } = await searchParams;
+  const { bulk, eventType, source } = await searchParams;
   const initialEventType = VALID_EVENT_TYPES.includes(eventType as EventType)
     ? (eventType as EventType)
     : null;
@@ -23,6 +24,7 @@ export default async function EstimatePage({
   return (
     <div className="flex min-h-dvh flex-col">
       <BackHeader />
+      {source === "share" && <SharedLinkBanner />}
       <main className="flex-1">
         <EstimateWizard initialBulk={bulk === "1"} initialEventType={initialEventType} />
       </main>
