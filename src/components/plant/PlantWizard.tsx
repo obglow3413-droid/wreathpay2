@@ -8,6 +8,7 @@ const MAX_IMAGES = 5;
 const ANALYZING_DURATION_MS = 1800;
 const PLANT_TYPES = ["관엽식물", "난·호접란", "대형 화분", "기타"];
 const PLANT_SIZES = ["소형", "중형", "대형"];
+const PICKUP_TIME_SLOTS = ["오전", "오후", "저녁", "시간 협의"];
 const ACCENT = "#8B5A2B";
 const ACCENT_BG = "#F3E8DD";
 
@@ -67,6 +68,7 @@ export default function PlantWizard() {
   const addressContainerRef = useRef<HTMLDivElement>(null);
 
   const [desiredPickupDate, setDesiredPickupDate] = useState("");
+  const [desiredPickupTimeSlot, setDesiredPickupTimeSlot] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [requestNote, setRequestNote] = useState("");
@@ -135,6 +137,7 @@ export default function PlantWizard() {
       formData.append("pickupAddress", pickupAddress);
       formData.append("pickupAddressDetail", pickupAddressDetail);
       formData.append("desiredPickupDate", desiredPickupDate);
+      formData.append("desiredPickupTimeSlot", desiredPickupTimeSlot ?? "");
       formData.append("customerName", customerName);
       formData.append("customerPhone", customerPhone);
       formData.append("requestNote", requestNote);
@@ -353,13 +356,38 @@ export default function PlantWizard() {
 
       {currentStep === "date" && (
         <StepBlock title="희망 수거일을 선택해주세요" onBack={goBack}>
-          <input
-            type="date"
-            value={desiredPickupDate}
-            onChange={(e) => setDesiredPickupDate(e.target.value)}
-            className="h-12 w-full rounded-lg border border-border px-4 text-[15px]"
-          />
-          <NextButton disabled={!desiredPickupDate} onClick={goNext} />
+          <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-[13.5px] font-medium">날짜</label>
+              <input
+                type="date"
+                value={desiredPickupDate}
+                onChange={(e) => setDesiredPickupDate(e.target.value)}
+                className="h-12 w-full rounded-lg border border-border px-4 text-[15px]"
+              />
+            </div>
+            <div>
+              <label className="mb-2 block text-[13.5px] font-medium">시간대설정</label>
+              <div className="grid grid-cols-2 gap-2.5">
+                {PICKUP_TIME_SLOTS.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setDesiredPickupTimeSlot(slot)}
+                    className="hover-lift rounded-xl border px-3.5 py-3.5 text-center text-[14px] font-medium"
+                    style={
+                      desiredPickupTimeSlot === slot
+                        ? { borderColor: ACCENT, backgroundColor: ACCENT_BG, color: ACCENT }
+                        : { borderColor: "#E3E8E5" }
+                    }
+                  >
+                    {slot}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <NextButton disabled={!desiredPickupDate || !desiredPickupTimeSlot} onClick={goNext} />
         </StepBlock>
       )}
 
