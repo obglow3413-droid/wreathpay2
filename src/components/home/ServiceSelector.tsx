@@ -37,7 +37,7 @@ export default function ServiceSelector() {
             href="/plant-collection"
             className="hover-lift group flex flex-col rounded-[20px] border border-border bg-white p-6 shadow-[0_10px_28px_-22px_rgba(23,26,24,0.25)]"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E6F2EC] text-[#0B6B4F]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F3E8DD] text-[#8B5A2B]">
               <Leaf size={24} strokeWidth={1.8} />
             </div>
             <p className="mt-4 text-[17px] font-bold text-foreground">개업화분 회수</p>
@@ -45,7 +45,7 @@ export default function ServiceSelector() {
               개업 후 남은 화분, 관리가 어렵다면 맡겨주세요. 상태를 확인해 회수·정리·재배치
               가능 여부를 안내합니다.
             </p>
-            <span className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-[#0B6B4F]">
+            <span className="mt-5 inline-flex items-center gap-1 text-[14px] font-semibold text-[#8B5A2B]">
               개업화분 회수 신청하기
               <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
             </span>
