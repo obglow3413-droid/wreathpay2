@@ -217,7 +217,7 @@ export default async function AdminRequestsPage({
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2 py-1 text-[11px] font-semibold ${
-                      r.kind === "wreath" ? "bg-brand-tint text-brand-dark" : "bg-[#F3E8DD] text-[#8B5A2B]"
+                      r.kind === "wreath" ? "bg-brand-tint text-brand-dark" : "bg-[#E7EBE4] text-[#102A22]"
                     }`}
                   >
                     {r.kind === "wreath" ? "화환" : "화분"}
@@ -229,7 +229,7 @@ export default async function AdminRequestsPage({
                       {r.requestNo}
                     </Link>
                   ) : (
-                    <span className="font-medium text-[#8B5A2B]">{r.requestNo}</span>
+                    <span className="font-medium text-[#102A22]">{r.requestNo}</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-muted">
