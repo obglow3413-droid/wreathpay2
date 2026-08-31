@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Script from "next/script";
 import StepProgress from "./StepProgress";
 import OptionCard from "./OptionCard";
 import {
@@ -12,6 +13,16 @@ import {
   type QuantityRange,
   type PickupTimeSlot,
 } from "@/lib/types";
+
+declare global {
+  interface Window {
+    daum: {
+      Postcode: new (options: {
+        oncomplete: (data: { roadAddress: string; address: string; jibunAddress: string }) => void;
+      }) => { embed: (element: HTMLElement) => void };
+    };
+  }
+}
 
 const MAX_IMAGES = 5;
 const ANALYZING_DURATION_MS = 1800;
@@ -65,6 +76,9 @@ export default function EstimateWizard({
   const [images, setImages] = useState<File[]>([]);
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [showAddressSearch, setShowAddressSearch] = useState(false);
+  const [addressScriptLoaded, setAddressScriptLoaded] = useState(false);
+  const addressContainerRef = useRef<HTMLDivElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
@@ -90,6 +104,18 @@ export default function EstimateWizard({
     }, ANALYZING_DURATION_MS);
     return () => clearTimeout(timer);
   }, [currentStep, steps.length]);
+
+  // 주소검색 레이어가 열리고 스크립트도 준비되면, 다음(Daum) 우편번호 검색 위젯을 그 자리에 그려줌
+  useEffect(() => {
+    if (!showAddressSearch || !addressScriptLoaded || !addressContainerRef.current) return;
+    addressContainerRef.current.innerHTML = "";
+    new window.daum.Postcode({
+      oncomplete: (data) => {
+        setAddress(data.roadAddress || data.address);
+        setShowAddressSearch(false);
+      },
+    }).embed(addressContainerRef.current);
+  }, [showAddressSearch, addressScriptLoaded]);
 
   function goNext() {
     setError(null);
@@ -154,6 +180,11 @@ export default function EstimateWizard({
 
   return (
     <div className="mx-auto max-w-lg px-5 py-8 pb-28">
+      <Script
+        src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+        strategy="afterInteractive"
+        onLoad={() => setAddressScriptLoaded(true)}
+      />
       {currentStep !== "analyzing" && (
         <StepProgress current={dataStepNumber} total={dataSteps.length} />
       )}
@@ -281,14 +312,13 @@ export default function EstimateWizard({
 
             <div>
               <Field label="주소" placeholder="주소를 입력해주세요" value={address} onChange={setAddress} />
-              <a
-                href={`https://map.kakao.com/?q=${encodeURIComponent(placeName || address || "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setShowAddressSearch(true)}
                 className="mt-1.5 inline-flex items-center gap-1 text-[12.5px] font-medium text-brand-dark underline"
               >
-                📍 주소를 모르겠다면 지도에서 검색하기
-              </a>
+                📍 주소를 모르겠다면 검색해서 바로 등록하기
+              </button>
             </div>
 
             <div>
@@ -394,6 +424,26 @@ export default function EstimateWizard({
             {submitting ? "신청 중..." : "예상 페이백 요청하기"}
           </button>
         </StepBlock>
+      )}
+
+      {showAddressSearch && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddressSearch(false)} />
+          <div className="fade-up relative flex w-full max-w-lg flex-col rounded-t-2xl bg-white">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <p className="text-[15px] font-semibold">주소 검색</p>
+              <button
+                type="button"
+                onClick={() => setShowAddressSearch(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-muted"
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+            </div>
+            <div ref={addressContainerRef} className="h-[420px] w-full" />
+          </div>
+        </div>
       )}
     </div>
   );
