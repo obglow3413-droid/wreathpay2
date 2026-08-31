@@ -166,7 +166,7 @@ export default function LinkShareSection() {
         </div>
 
         {/* 역할 카드 3개 */}
-        <div key={service} className="fade-up mt-6 grid grid-cols-1 gap-3.5 md:grid-cols-3">
+        <div key={service} className="tab-fade mt-6 grid grid-cols-1 gap-3.5 md:grid-cols-3">
           {meta.roles.map((role) => {
             const isSelected = selectedRoleKey === role.key;
             return (
