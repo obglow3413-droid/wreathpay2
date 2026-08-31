@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatKRW } from "@/lib/pricing";
 
-const ACCENT = "#8B5A2B";
+const ACCENT = "#102A22";
 
 export default function PlantQuickActions({
   requestId,
@@ -93,7 +93,7 @@ export default function PlantQuickActions({
             onClick={handleApprove}
             disabled={loading !== null}
             className="rounded-md border px-2 py-1 text-[11px] font-semibold disabled:opacity-50"
-            style={{ borderColor: ACCENT, backgroundColor: "#F3E8DD", color: ACCENT }}
+            style={{ borderColor: ACCENT, backgroundColor: "#E7EBE4", color: ACCENT }}
           >
             {loading === "approve" ? "처리중" : "승인"}
           </button>
