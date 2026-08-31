@@ -6,14 +6,14 @@ const TRUST_ITEMS = [
 
 export default function TrustIndicators() {
   return (
-    <section className="border-t border-[#E3E8E5] bg-white">
+    <section className="border-t border-[#DCD8CF] bg-white">
       <div className="mx-auto grid max-w-[1120px] grid-cols-3 gap-3 px-5 py-7 md:gap-6 md:px-8 md:py-9">
         {TRUST_ITEMS.map((item) => (
           <div
             key={item.value}
-            className="rounded-2xl border border-[#E3E8E5] bg-white px-3 py-4 text-center md:py-5"
+            className="rounded-2xl border border-[#DCD8CF] bg-white px-3 py-4 text-center md:py-5"
           >
-            <p className="text-[13.5px] font-bold text-[#171A18] md:text-[15px]">{item.value}</p>
+            <p className="text-[13.5px] font-bold text-[#1D211F] md:text-[15px]">{item.value}</p>
           </div>
         ))}
       </div>
