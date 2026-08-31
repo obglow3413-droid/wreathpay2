@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import Link from "next/link";
 import BackHeader from "@/components/layout/BackHeader";
@@ -16,7 +15,7 @@ export default async function PlantCollectionCompletePage({
     <div className="flex min-h-dvh flex-col">
       <BackHeader />
       <div className="mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-6 py-16 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#F3E8DD] text-2xl">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E7EBE4] text-2xl">
           ✓
         </div>
         <h1 className="mt-5 text-[20px] font-bold leading-snug">
