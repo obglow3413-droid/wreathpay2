@@ -471,9 +471,9 @@ function AnalyzingScreen({ previewSrc }: { previewSrc?: string }) {
         예상 페이백 금액을 계산할게요.
       </p>
       <div className="mt-6 flex items-center gap-1.5">
-        <span className="h-2 w-2 animate-bounce rounded-full bg-brand [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-brand [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-brand" />
+        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "0ms" }} />
+        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "200ms" }} />
+        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "400ms" }} />
       </div>
     </div>
   );
