@@ -184,6 +184,11 @@ export default function PlantWizard() {
 
       {currentStep === "photo" && (
         <StepBlock title="화분 사진을 올려주세요">
+          <p className="mb-1 text-[15px] font-bold leading-snug text-foreground">
+            사무실 화분 12개,
+            <br />
+            관리 담당자는 아직도 공석입니다.
+          </p>
           <p className="mb-4 text-[13.5px] text-muted">
             화분 전체와 상태가 보이도록 촬영해주세요. 사진 한 장이면 바로 시작할 수 있어요.
           </p>
