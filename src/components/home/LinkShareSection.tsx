@@ -60,8 +60,8 @@ const SERVICE_META: Record<
 > = {
   wreath: {
     tabLabel: "화환 정리",
-    accent: "#00A878",
-    accentBg: "#E3F6EF",
+    accent: "#102A22",
+    accentBg: "#E7EBE4",
     buttonLabel: "화환 정리 링크 보내기",
     path: "/estimate",
     roles: WREATH_ROLES,
@@ -127,12 +127,12 @@ export default function LinkShareSection() {
         <p className="text-[13px] font-semibold" style={{ color: meta.accent }}>
           행사 끝난 뒤
         </p>
-        <h2 className="mt-2 text-[24px] font-extrabold leading-[1.35] tracking-tight text-[#171A18] md:text-[32px]">
+        <h2 className="mt-2 text-[24px] font-extrabold leading-[1.35] tracking-tight text-[#1D211F] md:text-[32px]">
           축하는 받으세요.
           <br />
           정리는 꽃페이가 할게요.
         </h2>
-        <p className="mt-3 text-[14px] leading-relaxed text-[#59615D] md:text-[15.5px]">
+        <p className="mt-3 text-[14px] leading-relaxed text-[#727872] md:text-[15.5px]">
           정신없는 행사 당일, 화환과 개업화분 정리 링크를 대신 보내주세요.
         </p>
 
@@ -149,7 +149,7 @@ export default function LinkShareSection() {
             type="button"
             onClick={() => handleServiceChange("wreath")}
             className={`relative z-10 flex-1 rounded-full py-2.5 text-center text-[13px] font-semibold transition-colors md:text-[13.5px] ${
-              service === "wreath" ? "text-white" : "text-[#7A837E]"
+              service === "wreath" ? "text-white" : "text-[#727872]"
             }`}
           >
             화환 정리
@@ -158,7 +158,7 @@ export default function LinkShareSection() {
             type="button"
             onClick={() => handleServiceChange("plant")}
             className={`relative z-10 flex-1 rounded-full py-2.5 text-center text-[13px] font-semibold transition-colors md:text-[13.5px] ${
-              service === "plant" ? "text-white" : "text-[#7A837E]"
+              service === "plant" ? "text-white" : "text-[#727872]"
             }`}
           >
             개업화분 정리
@@ -178,7 +178,7 @@ export default function LinkShareSection() {
                 style={
                   isSelected
                     ? { borderColor: meta.accent, backgroundColor: meta.accentBg }
-                    : { borderColor: "#E3E8E5" }
+                    : { borderColor: "#DCD8CF" }
                 }
               >
                 <span
@@ -187,8 +187,8 @@ export default function LinkShareSection() {
                 >
                   {role.label}
                 </span>
-                <p className="mt-3 text-[15px] font-bold leading-snug text-[#171A18]">{role.big}</p>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#59615D]">{role.small}</p>
+                <p className="mt-3 text-[15px] font-bold leading-snug text-[#1D211F]">{role.big}</p>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-[#727872]">{role.small}</p>
                 {isSelected && (
                   <span
                     className="absolute right-4 top-4 flex h-5 w-5 items-center justify-center rounded-full text-white"
@@ -221,7 +221,7 @@ export default function LinkShareSection() {
       {/* 토스트 */}
       {toast && (
         <div className="fixed inset-x-0 bottom-24 z-[60] flex justify-center px-5">
-          <div className="rounded-full bg-[#171A18] px-5 py-3 text-[13px] font-medium text-white shadow-lg">
+          <div className="rounded-full bg-[#1D211F] px-5 py-3 text-[13px] font-medium text-white shadow-lg">
             {toast}
           </div>
         </div>
