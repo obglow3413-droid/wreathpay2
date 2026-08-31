@@ -25,7 +25,7 @@ export default function FloatingPaybackCta() {
     >
       <Link
         href="/estimate"
-        className="hover-lift mx-auto flex h-13 w-full max-w-md items-center justify-center gap-1.5 rounded-full bg-[#00A878] px-6 text-[15px] font-bold text-white shadow-[0_10px_28px_-8px_rgba(0,168,120,0.6)] hover:bg-[#008F68]"
+        className="hover-lift mx-auto flex h-13 w-full max-w-md items-center justify-center gap-1.5 rounded-full bg-[#102A22] px-6 text-[15px] font-bold text-white shadow-[0_10px_28px_-8px_rgba(0,168,120,0.6)] hover:bg-[#0A1B16]"
       >
         지금바로 페이백 받기
         <ArrowRight size={17} strokeWidth={2.5} />
