@@ -1,19 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f9f7;
-  --foreground: #171a18;
-  --muted: #616965;
-  --muted-light: #8a908c;
-  --border: #e4e9e6;
-  --surface: #f7f9f7;
-  --white: #ffffff;
-  --error: #e5484d;
+  /* 프리미엄 에디토리얼 브랜드 톤 원본 토큰 */
+  --ink: #0a1b16;
+  --forest: #102a22;
+  --ivory: #f6f3ec;
+  --paper: #fffdf8;
+  --brass: #b69255;
+  --sage: #c8d3c5;
+  --text: #1d211f;
+  --muted-tone: #727872;
+  --line: #dcd8cf;
 
-  /* 포인트 컬러: 꽃깞 KKOTGAP 브랜드 컬러 (선명한 민트 그린) */
-  --brand: #00a878;
-  --brand-dark: #008f68;
-  --brand-tint: #e3f6ef;
+  --background: var(--ivory);
+  --foreground: var(--text);
+  --muted: var(--muted-tone);
+  --muted-light: #9aa19b;
+  --border: var(--line);
+  --surface: var(--paper);
+  --white: var(--paper);
+  --error: #b1443c;
+
+  /* 메인 CTA/선택 상태 컬러: forest (골드 버튼은 만들지 않음) */
+  --brand: var(--forest);
+  --brand-dark: var(--ink);
+  --brand-tint: #e7ebe4;
 }
 
 @theme inline {
@@ -28,14 +39,20 @@
   --color-brand: var(--brand);
   --color-brand-dark: var(--brand-dark);
   --color-brand-tint: var(--brand-tint);
+  --color-ink: var(--ink);
+  --color-forest: var(--forest);
+  --color-ivory: var(--ivory);
+  --color-paper: var(--paper);
+  --color-brass: var(--brass);
+  --color-sage: var(--sage);
   /* 영문·숫자는 헬베티카 계열(Helvetica Neue/Arial) 우선, 한글은 Pretendard로 자연스럽게 폴백 */
   --font-sans: "Helvetica Neue", Helvetica, Arial, var(--font-pretendard), -apple-system,
     BlinkMacSystemFont, "Malgun Gothic", sans-serif;
 }
 
-/* 프리미엄한 느낌의 커스텀 이징 (급하게 시작해서 부드럽게 멈춤) */
+/* 절제된 전환 (150~200ms, opacity/translate만) */
 :root {
-  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 html {
@@ -87,17 +104,17 @@ a, button {
   }
 }
 
-/* 스크롤 시 부드러운 등장 애니메이션 (과하지 않게 절제) */
+/* 스크롤 시 등장 애니메이션 (절제: 180ms, opacity + 짧은 translate만) */
 @media (prefers-reduced-motion: no-preference) {
   .fade-up {
-    animation: fadeUp 0.65s var(--ease-premium) both;
+    animation: fadeUp 0.18s var(--ease-premium) both;
   }
 }
 
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -105,26 +122,18 @@ a, button {
   }
 }
 
-@keyframes shimmer {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(100%);
-  }
-}
-
-/* 주요 버튼/카드에 적용하는 살짝 뜨는 호버 + 눌림 인터랙션 */
+/* 주요 버튼/카드에 적용하는 절제된 호버 인터랙션 (180ms, translate만) */
 .hover-lift {
-  transition: transform 0.25s var(--ease-premium), box-shadow 0.25s var(--ease-premium);
+  transition: transform 0.18s var(--ease-premium), opacity 0.18s var(--ease-premium);
 }
 @media (hover: hover) {
   .hover-lift:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 }
 .hover-lift:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0);
+  opacity: 0.92;
 }
 
 ::selection {
