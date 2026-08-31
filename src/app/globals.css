@@ -50,9 +50,9 @@
     BlinkMacSystemFont, "Malgun Gothic", sans-serif;
 }
 
-/* 절제된 전환 (150~200ms, opacity/translate만) */
+/* 절제된 프리미엄 이징 */
 :root {
-  --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html {
@@ -77,10 +77,9 @@ h1, h2, h3 {
   letter-spacing: -0.025em;
 }
 
-/* 인터랙션 요소의 기본 트랜지션을 통일해 사이트 전체가 일관되게 부드럽도록 */
+/* 색상 전환(탭 선택 등)만 기본으로 통일. transform은 각 컴포넌트에서 명시적으로 제어 */
 a, button {
-  transition: transform 0.25s var(--ease-premium), box-shadow 0.25s var(--ease-premium),
-    background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
 
 :focus-visible {
@@ -104,17 +103,20 @@ a, button {
   }
 }
 
-/* 스크롤 시 등장 애니메이션 (절제: 180ms, opacity + 짧은 translate만) */
+/*
+ * 첫 화면 진입 시퀀스: 헤드라인·설명·CTA·카드가 순서대로 16~24px 아래에서 올라오며 등장.
+ * 진입 시 단 한 번만 실행 (스크롤로 다시 안 숨겨짐). 스태거는 각 요소의 animation-delay로 부여.
+ */
 @media (prefers-reduced-motion: no-preference) {
   .fade-up {
-    animation: fadeUp 0.18s var(--ease-premium) both;
+    animation: fadeUp 700ms var(--ease-premium) both;
   }
 }
 
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -122,18 +124,123 @@ a, button {
   }
 }
 
-/* 주요 버튼/카드에 적용하는 절제된 호버 인터랙션 (180ms, translate만) */
+/* 탭 콘텐츠 전환(화환↔화분 등): opacity + 10px, 250ms 이내로 짧고 가볍게 */
+@media (prefers-reduced-motion: no-preference) {
+  .tab-fade {
+    animation: tabFade 250ms var(--ease-premium) both;
+  }
+}
+
+@keyframes tabFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/*
+ * 버튼/카드 공통 호버: 160ms, 아주 미세한 translateY(-2px) + 그림자 소폭 증가.
+ * 확대/축소나 흔들림은 없음. active는 scale(0.98)로 눌리는 느낌만.
+ */
 .hover-lift {
-  transition: transform 0.18s var(--ease-premium), opacity 0.18s var(--ease-premium);
+  transition: transform 160ms var(--ease-premium), box-shadow 160ms var(--ease-premium);
 }
 @media (hover: hover) {
   .hover-lift:hover {
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -10px rgba(10, 27, 22, 0.35);
   }
 }
 .hover-lift:active {
-  transform: translateY(0);
-  opacity: 0.92;
+  transform: scale(0.98);
+}
+
+/* 버튼 안 화살표 아이콘: hover 시 오른쪽으로 3px만 이동 */
+.hover-arrow {
+  transition: transform 160ms var(--ease-premium);
+}
+.hover-lift:hover .hover-arrow {
+  transform: translateX(3px);
+}
+
+/* 사진 업로드 카드: hover 시 테두리 색만 은은하게, 뜨는 높이는 hover-lift에 맡기되 2px 이내 유지 */
+.upload-card {
+  transition: border-color 200ms ease;
+}
+.upload-card:hover {
+  border-color: var(--brass);
+}
+.upload-card-icon {
+  transition: transform 200ms var(--ease-premium);
+}
+.upload-card:hover .upload-card-icon {
+  transform: scale(1.03);
+}
+
+/* 다크 섹션 안의 브라스 라인: 좌측에서 0→100%로 한 번만 부드럽게 그려짐 */
+.brass-line {
+  transform-origin: left;
+  animation: brassLineGrow 900ms var(--ease-premium) both;
+}
+@keyframes brassLineGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* 접근성: 모션 최소화 환경에서는 모든 커스텀 애니메이션/트랜지션 제거 */
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .tab-fade,
+  .brass-line,
+  .dot-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hover-lift,
+  .hover-arrow,
+  .upload-card,
+  .upload-card-icon {
+    transition: none !important;
+  }
+  .hover-lift:hover,
+  .hover-lift:active {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}
+
+/* 모바일: 진입/전환 지속시간을 10~15% 짧게 */
+@media (max-width: 767px) {
+  .fade-up {
+    animation-duration: 600ms;
+  }
+  .tab-fade {
+    animation-duration: 210ms;
+  }
+}
+
+/* 로딩 점 3개: 바운스 대신 절제된 opacity 순차 페이드 */
+@media (prefers-reduced-motion: no-preference) {
+  .dot-fade {
+    animation: dotFade 1.2s ease-in-out infinite;
+  }
+}
+@keyframes dotFade {
+  0%, 100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 ::selection {
