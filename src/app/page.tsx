@@ -3,7 +3,7 @@ import AppTopBar from "@/components/home/AppTopBar";
 import AppBottomNav from "@/components/layout/AppBottomNav";
 import SiteFooter from "@/components/layout/SiteFooter";
 import Hero from "@/components/home/Hero";
-import ServiceSelector from "@/components/home/ServiceSelector";
+import LinkShareSection from "@/components/home/LinkShareSection";
 import TrustIndicators from "@/components/home/TrustIndicators";
 import ValueSection from "@/components/home/ValueSection";
 import LiveFeed from "@/components/home/LiveFeed";
@@ -27,7 +27,7 @@ export default function HomePage() {
       <AppTopBar />
       <main className="flex-1 pb-24">
         <Hero />
-        <ServiceSelector />
+        <LinkShareSection />
         <TrustIndicators />
         <Reveal>
           <ValueSection />
