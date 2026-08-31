@@ -278,13 +278,38 @@ export default function EstimateWizard({
         <StepBlock title="수거 장소를 알려주세요" onBack={goBack}>
           <div className="space-y-3">
             <Field label="장소명" placeholder="예) 서울아산병원 장례식장" value={placeName} onChange={setPlaceName} />
-            <Field label="주소" placeholder="주소를 입력해주세요" value={address} onChange={setAddress} />
-            <Field
-              label="상세위치"
-              placeholder="예) 3층 7호실"
-              value={addressDetail}
-              onChange={setAddressDetail}
-            />
+
+            <div>
+              <Field label="주소" placeholder="주소를 입력해주세요" value={address} onChange={setAddress} />
+              <a
+                href={`https://map.kakao.com/?q=${encodeURIComponent(placeName || address || "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1 text-[12.5px] font-medium text-brand-dark underline"
+              >
+                📍 주소를 모르겠다면 지도에서 검색하기
+              </a>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="mb-1.5 block text-[13.5px] font-medium">상세위치</label>
+                <button
+                  type="button"
+                  onClick={() => setAddressDetail("알아서 가져가주세요")}
+                  className="mb-1.5 rounded-full border border-border px-2.5 py-1 text-[11.5px] font-medium text-muted"
+                >
+                  모르겠어요
+                </button>
+              </div>
+              <input
+                type="text"
+                value={addressDetail}
+                placeholder="예) 3층 7호실"
+                onChange={(e) => setAddressDetail(e.target.value)}
+                className="h-12 w-full rounded-lg border border-border px-4 text-[15px] placeholder:text-muted-light"
+              />
+            </div>
           </div>
           <NextButton disabled={!placeName || !address} onClick={goNext} />
         </StepBlock>
