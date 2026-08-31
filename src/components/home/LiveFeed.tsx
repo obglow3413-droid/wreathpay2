@@ -115,15 +115,9 @@ export default async function LiveFeed() {
           {rows.map((row, i) => (
             <div
               key={`${row.kind}-${row.id}`}
-              className="fade-up group relative flex items-center justify-between gap-3 overflow-hidden rounded-xl border border-border bg-surface px-4 py-3.5"
-              style={{ animationDelay: `${i * 90}ms` }}
+              className="fade-up relative flex items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3.5"
+              style={{ animationDelay: `${Math.min(i, 5) * 60}ms` }}
             >
-              {/* 카드가 나타날 때 왼쪽에서 오른쪽으로 살짝 스치는 하이라이트 */}
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-brand-tint/60 to-transparent"
-                style={{ animation: `shimmer 1.1s ease-out ${i * 90 + 120}ms forwards` }}
-              />
               <div className="relative min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span
