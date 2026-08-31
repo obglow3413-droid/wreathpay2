@@ -5,7 +5,6 @@ import SiteFooter from "@/components/layout/SiteFooter";
 import Hero from "@/components/home/Hero";
 import LinkShareSection from "@/components/home/LinkShareSection";
 import TrustIndicators from "@/components/home/TrustIndicators";
-import ValueSection from "@/components/home/ValueSection";
 import LiveFeed from "@/components/home/LiveFeed";
 import BulkSection from "@/components/home/BulkSection";
 import FloatingPaybackCta from "@/components/home/FloatingPaybackCta";
@@ -29,9 +28,6 @@ export default function HomePage() {
         <Hero />
         <LinkShareSection />
         <TrustIndicators />
-        <Reveal>
-          <ValueSection />
-        </Reveal>
         <Reveal>
           <LiveFeed />
         </Reveal>
