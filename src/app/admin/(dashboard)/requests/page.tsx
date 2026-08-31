@@ -29,6 +29,7 @@ interface PlantRow {
   plant_size: string;
   pickup_address: string;
   desired_pickup_date: string | null;
+  desired_pickup_time_slot: string | null;
   customer_name: string;
   customer_phone: string;
   status: string;
@@ -82,7 +83,7 @@ async function getPlantRequests(filters: SearchParams): Promise<PlantRow[]> {
   let query = supabase
     .from("plant_collection_requests")
     .select(
-      "id, request_no, plant_type, quantity, plant_size, pickup_address, desired_pickup_date, customer_name, customer_phone, status, created_at"
+      "id, request_no, plant_type, quantity, plant_size, pickup_address, desired_pickup_date, desired_pickup_time_slot, customer_name, customer_phone, status, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(100);
@@ -142,7 +143,9 @@ async function getUnifiedRows(filters: SearchParams): Promise<UnifiedRow[]> {
         region: p.pickup_address?.split(" ").slice(0, 2).join(" ") ?? "-",
         quantityLabel: `${p.quantity}개 · ${p.plant_size}`,
         paybackAmount: null,
-        scheduleLabel: p.desired_pickup_date ?? "-",
+        scheduleLabel: p.desired_pickup_date
+          ? `${p.desired_pickup_date}${p.desired_pickup_time_slot ? " · " + p.desired_pickup_time_slot : ""}`
+          : "-",
         plantStatus: p.status,
       })),
     ];
