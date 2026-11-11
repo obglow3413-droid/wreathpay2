@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Camera, ChevronRight } from "lucide-react";
 import { useServiceTab, type ServiceKey } from "./ServiceTabContext";
 import { SERVICE_CONTENT, SERVICE_ORDER } from "./serviceContent";
+import SmallQuantitySheet from "./SmallQuantitySheet";
 
 export default function Hero() {
   const { active, setActive } = useServiceTab();
@@ -89,6 +90,7 @@ export default function Hero() {
             </div>
 
             <p className="mt-4 text-[12.5px] text-muted">{content.footNote}</p>
+            <SmallQuantitySheet ctaHref={content.ctaHref} />
           </div>
 
           {/* 오른쪽(PC) / 아래(모바일): 사진 견적 카드 */}
