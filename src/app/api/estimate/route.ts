@@ -27,6 +27,14 @@ export async function POST(request: Request) {
     const pickupTimeSlot = formData.get("pickupTimeSlot") as string | null;
     const customerName = formData.get("customerName") as string | null;
     const customerPhone = formData.get("customerPhone") as string | null;
+    const latRaw = Number(formData.get("addressLat"));
+    const lngRaw = Number(formData.get("addressLng"));
+    const hasCoords =
+      formData.get("addressLat") !== null && Number.isFinite(latRaw) && Number.isFinite(lngRaw) &&
+      latRaw > 32 && latRaw < 39.5 && lngRaw > 123 && lngRaw < 132.5;
+    const countRaw = Math.round(Number(formData.get("customerCount")));
+    const customerCount = Number.isFinite(countRaw) && countRaw >= 1 && countRaw <= 500 ? countRaw : null;
+    const dispatchMode = formData.get("dispatchMode") === "fast" ? "fast" : "date";
     const images = formData.getAll("images").filter((f): f is File => f instanceof File);
 
     if (
@@ -90,6 +98,8 @@ export async function POST(request: Request) {
           address_detail: addressDetail || null,
           pickup_date: pickupDate,
           pickup_time_slot: pickupTimeSlot,
+          customer_note: dispatchMode === "fast" ? "빠른 배정 요청(가장 빠른 일정으로 안내 희망)" : null,
+          ...(hasCoords ? { address_lat: latRaw, address_lng: lngRaw } : {}),
           agreed_disposal_authority: true,
           agreed_site_restriction: true,
           agreed_final_price_variation: true,
@@ -156,7 +166,18 @@ export async function POST(request: Request) {
         const ai = await runAiEstimate(await filesToAiImages(images), { eventTypeHint: eventType, prices });
         if (ai) {
           if (ai.status === "ok") {
-            const mid = (k: "premium" | "a" | "b" | "c") => Math.round((ai.low.counts[k] + ai.high.counts[k]) / 2);
+            const keys = ["premium", "a", "b", "c"] as const;
+            const mids = keys.map((k) => Math.round((ai.low.counts[k] + ai.high.counts[k]) / 2));
+            const midTotal = mids.reduce((a, b) => a + b, 0);
+            // 고객이 수량을 직접 입력했다면(사진이 잘린 경우 등) 등급 비율은 유지하고 총 수량만 맞춘다.
+            let counts = mids;
+            if (customerCount && midTotal > 0 && customerCount !== midTotal) {
+              counts = mids.map((m) => Math.round((m * customerCount) / midTotal));
+              const diff = customerCount - counts.reduce((a, b) => a + b, 0);
+              counts[counts.indexOf(Math.max(...counts))] += diff;
+            }
+            const factor = customerCount && midTotal > 0 ? customerCount / midTotal : 1;
+            const mid = (k: "premium" | "a" | "b" | "c") => counts[keys.indexOf(k)];
             await supabase
               .from("estimate_requests")
               .update({
@@ -164,14 +185,14 @@ export async function POST(request: Request) {
                 grade_a_count: mid("a"),
                 grade_b_count: mid("b"),
                 grade_c_count: mid("c"),
-                estimated_sale_amount: Math.round((ai.low.sale + ai.high.sale) / 2),
-                customer_payback_amount: Math.round((ai.low.payback + ai.high.payback) / 2 / 1000) * 1000,
+                estimated_sale_amount: Math.round(((ai.low.sale + ai.high.sale) / 2) * factor),
+                customer_payback_amount: Math.round(((ai.low.payback + ai.high.payback) / 2) * factor / 1000) * 1000,
                 updated_at: new Date().toISOString(),
               })
               .eq("id", estimateRequest.id);
           }
           // ai_estimate 열은 마이그레이션(supabase/migration_ai_estimate.sql) 적용 후에만 존재 — 없으면 조용히 건너뜀
-          await supabase.from("estimate_requests").update({ ai_estimate: ai }).eq("id", estimateRequest.id);
+          await supabase.from("estimate_requests").update({ ai_estimate: { ...ai, customerCount } }).eq("id", estimateRequest.id);
         }
       } catch (e) {
         console.error("[estimate ai]", e);

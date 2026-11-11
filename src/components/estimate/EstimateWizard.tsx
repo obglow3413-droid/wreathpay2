@@ -33,7 +33,23 @@ interface PreviewEstimate {
   lowPayback: number;
   highPayback: number;
   visibleCount: number;
+  isCropped: boolean;
+  perWreathLow: number;
+  perWreathHigh: number;
   notes: string;
+}
+
+function rangeFromCount(n: number): QuantityRange {
+  if (n >= 50) return "50+";
+  if (n >= 30) return "30-49";
+  if (n >= 10) return "10-29";
+  if (n >= 5) return "5-9";
+  return "1-4";
+}
+
+// 서울 대략 범위(안내 문구용)
+function isInSeoul(lat: number, lng: number) {
+  return lat > 37.41 && lat < 37.72 && lng > 126.76 && lng < 127.19;
 }
 
 /** 휴대폰 사진(수 MB)을 긴 변 1600px · JPEG로 줄여서 업로드/AI 분석을 빠르고 가볍게 만든다. 실패하면 원본 그대로 사용. */
@@ -138,6 +154,21 @@ export default function EstimateWizard({
   const [aiState, setAiState] = useState<"idle" | "loading" | "done">("idle");
   const [aiEstimate, setAiEstimate] = useState<PreviewEstimate | null>(null);
   const aiSignatureRef = useRef("");
+  // 화환 수량: AI가 센 값을 쓰되, 사진이 잘렸거나 다르면 고객이 직접 입력
+  const [countOverride, setCountOverride] = useState<number | null>(null);
+  // 위치 기반 입력
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locateMsg, setLocateMsg] = useState<string | null>(null);
+  // 기사님 배정 방식: 빠른 배정(담당자가 가장 빠른 일정 안내) / 날짜 직접 선택
+  const [dispatchMode, setDispatchMode] = useState<"fast" | "date">("fast");
+
+  const aiOk = aiState === "done" && aiEstimate?.status === "ok";
+  const aiFinalCount: number | null = !aiOk
+    ? null
+    : countOverride ?? (aiEstimate && !aiEstimate.isCropped && aiEstimate.visibleCount > 0 ? aiEstimate.visibleCount : null);
+  const skipQuantity = aiFinalCount !== null;
+  const effectiveQuantityRange: QuantityRange | null = skipQuantity ? rangeFromCount(aiFinalCount!) : quantityRange;
 
   const previews = useMemo(() => images.map((f) => URL.createObjectURL(f)), [images]);
 
@@ -187,6 +218,8 @@ export default function EstimateWizard({
     new window.daum.Postcode({
       oncomplete: (data) => {
         setAddress(data.roadAddress || data.address);
+        setCoords(null);
+        setLocateMsg(null);
         setShowAddressSearch(false);
       },
     }).embed(addressContainerRef.current);
@@ -194,12 +227,17 @@ export default function EstimateWizard({
 
   function goNext() {
     setError(null);
-    setStepIndex((i) => Math.min(steps.length - 1, i + 1));
+    setStepIndex((i) => {
+      let t = Math.min(steps.length - 1, i + 1);
+      if (steps[t] === "quantity" && skipQuantity) t = Math.min(steps.length - 1, t + 1);
+      return t;
+    });
   }
   function goBack() {
     setError(null);
     setStepIndex((i) => {
       let target = Math.max(0, i - 1);
+      if (steps[target] === "quantity" && skipQuantity) target = Math.max(0, target - 1);
       // AI 결과가 없는(건너뛴) estimate 단계는 뒤로 갈 때도 건너뜀
       if (steps[target] === "estimate" && aiState !== "done") target = Math.max(0, target - 1);
       return target;
@@ -220,11 +258,51 @@ export default function EstimateWizard({
     setImages((prev) => prev.filter((_, i) => i !== idx));
   }
 
-  const isSmallOrder = quantityRange === "1-4" || quantityRange === "5-9";
+  const isSmallOrder = effectiveQuantityRange === "1-4" || effectiveQuantityRange === "5-9";
   const allAgreed = Object.values(agreements).every(Boolean);
 
+  function useCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocateMsg("이 기기에서는 위치를 가져올 수 없어요. 주소를 직접 입력하거나 검색해 주세요.");
+      return;
+    }
+    setLocating(true);
+    setLocateMsg(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCoords({ lat, lng });
+        try {
+          const r = await fetch(`/api/geo/reverse?lat=${lat}&lng=${lng}`);
+          const json = await r.json();
+          if (json?.address) {
+            setAddress(json.address);
+            setLocateMsg(
+              isInSeoul(lat, lng)
+                ? "현재 위치로 주소를 채웠어요. 틀리면 직접 고쳐주세요."
+                : "현재 위치로 주소를 채웠어요. 서울 외 지역은 담당자가 일정을 확인해 안내해 드려요."
+            );
+          } else {
+            setLocateMsg("위치는 확인했지만 주소를 찾지 못했어요. 주소를 직접 입력해 주세요.");
+          }
+        } catch {
+          setLocateMsg("위치는 확인했지만 주소를 찾지 못했어요. 주소를 직접 입력해 주세요.");
+        }
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setLocateMsg("위치 권한이 없어 가져오지 못했어요. 주소를 직접 입력하거나 검색해 주세요.");
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+    );
+  }
+
   async function handleSubmit() {
-    if (!eventType || !quantityRange || !pickupTimeSlot) {
+    const finalSlot = dispatchMode === "fast" ? "시간 협의" : pickupTimeSlot;
+    const finalDate = dispatchMode === "fast" ? daysFromNow(1) : pickupDate;
+    if (!eventType || !effectiveQuantityRange || !finalSlot) {
       setError("입력하지 않은 항목이 있어요. 이전 단계를 확인해주세요.");
       return;
     }
@@ -237,12 +315,18 @@ export default function EstimateWizard({
     try {
       const formData = new FormData();
       formData.append("eventType", eventType);
-      formData.append("quantityRange", quantityRange);
+      formData.append("quantityRange", effectiveQuantityRange);
+      if (countOverride !== null) formData.append("customerCount", String(countOverride));
+      if (coords) {
+        formData.append("addressLat", String(coords.lat));
+        formData.append("addressLng", String(coords.lng));
+      }
+      formData.append("dispatchMode", dispatchMode);
       formData.append("placeName", placeName);
       formData.append("address", address);
       formData.append("addressDetail", addressDetail);
-      formData.append("pickupDate", pickupDate);
-      formData.append("pickupTimeSlot", pickupTimeSlot);
+      formData.append("pickupDate", finalDate);
+      formData.append("pickupTimeSlot", finalSlot);
       formData.append("customerName", customerName);
       formData.append("customerPhone", customerPhone);
       images.forEach((img) => formData.append("images", img));
@@ -253,6 +337,9 @@ export default function EstimateWizard({
         throw new Error(body.error ?? "신청 처리 중 문제가 발생했어요.");
       }
       const data = await res.json();
+      try {
+        sessionStorage.setItem(`kkotpay:phone:${data.requestNo}`, customerPhone);
+      } catch {}
       router.push(`/estimate/complete?req=${data.requestNo}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "신청 처리 중 문제가 발생했어요.");
@@ -356,6 +443,8 @@ export default function EstimateWizard({
             <EstimateResult
               estimate={aiEstimate}
               previewSrc={previews[0]}
+              count={countOverride}
+              onCount={setCountOverride}
               onBack={goBack}
               onNext={goNext}
             />
@@ -407,14 +496,33 @@ export default function EstimateWizard({
             <Field label="장소명" placeholder="예) 서울아산병원 장례식장" value={placeName} onChange={setPlaceName} />
 
             <div>
-              <Field label="주소" placeholder="주소를 입력해주세요" value={address} onChange={setAddress} />
-              <button
-                type="button"
-                onClick={() => setShowAddressSearch(true)}
-                className="mt-1.5 inline-flex items-center gap-1 text-[12.5px] font-medium text-brand-dark underline"
-              >
-                📍 주소를 모르겠다면 검색해서 바로 등록하기
-              </button>
+              <Field
+                label="주소"
+                placeholder="주소를 입력해주세요"
+                value={address}
+                onChange={(v) => {
+                  setAddress(v);
+                  setCoords(null);
+                }}
+              />
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={useCurrentLocation}
+                  disabled={locating}
+                  className="hover-lift flex h-11 items-center justify-center rounded-lg border border-brand bg-brand-tint text-[13px] font-semibold text-brand-dark disabled:opacity-50"
+                >
+                  {locating ? "위치 확인 중..." : "📍 현재 위치로 입력"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddressSearch(true)}
+                  className="hover-lift flex h-11 items-center justify-center rounded-lg border border-border text-[13px] font-medium"
+                >
+                  🔍 주소 검색
+                </button>
+              </div>
+              {locateMsg && <p className="mt-1.5 text-[12px] leading-relaxed text-muted">{locateMsg}</p>}
             </div>
 
             <div>
@@ -437,6 +545,21 @@ export default function EstimateWizard({
               />
             </div>
 
+            <div>
+              <label className="mb-1.5 block text-[13.5px] font-medium">기사님 배정 신청</label>
+              <div className="grid grid-cols-2 gap-2">
+                <OptionCard label="빠른 배정" compact selected={dispatchMode === "fast"} onClick={() => setDispatchMode("fast")} />
+                <OptionCard label="날짜 선택" compact selected={dispatchMode === "date"} onClick={() => setDispatchMode("date")} />
+              </div>
+              {dispatchMode === "fast" && (
+                <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
+                  가장 빠른 일정으로 배정을 요청해요. 담당자가 확인 후 수거 날짜를 안내해 드립니다.
+                </p>
+              )}
+            </div>
+
+            {dispatchMode === "date" && (
+            <>
             <div>
               <label className="mb-1.5 block text-[13.5px] font-medium">수거 희망일</label>
               <div className="grid grid-cols-3 gap-2">
@@ -476,9 +599,11 @@ export default function EstimateWizard({
                 ))}
               </div>
             </div>
+            </>
+            )}
           </div>
           <NextButton
-            disabled={!placeName || !address || !pickupDate || !pickupTimeSlot}
+            disabled={!placeName || !address || (dispatchMode === "date" && (!pickupDate || !pickupTimeSlot))}
             onClick={goNext}
           />
         </StepBlock>
@@ -607,21 +732,43 @@ function AnalyzingScreen({ previewSrc }: { previewSrc?: string }) {
   );
 }
 
-/** AI 예상 금액 결과: 확정 금액이 아니라 범위로 안내 */
+/** AI 예상 금액 결과: 확정 금액이 아니라 범위로 안내. 사진이 잘렸으면 수량을 직접 입력받아 금액을 다시 계산 */
 function EstimateResult({
   estimate,
   previewSrc,
+  count,
+  onCount,
   onBack,
   onNext,
 }: {
   estimate: PreviewEstimate;
   previewSrc?: string;
+  count: number | null;
+  onCount: (n: number | null) => void;
   onBack: () => void;
   onNext: () => void;
 }) {
   const ok = estimate.status === "ok";
+  const needsInput = ok && (estimate.isCropped || estimate.visibleCount <= 0);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(count ? String(count) : "");
+  const showInput = needsInput ? count === null || editing : editing;
+
+  const effectiveCount = count ?? (needsInput ? null : estimate.visibleCount);
+  const low = count !== null ? estimate.perWreathLow * count : estimate.lowPayback;
+  const high = count !== null ? estimate.perWreathHigh * count : estimate.highPayback;
+  const showRange = ok && (!needsInput || count !== null);
+  const canNext = !ok || effectiveCount !== null;
+
+  function applyDraft() {
+    const n = Math.round(Number(draft));
+    if (!Number.isFinite(n) || n < 1 || n > 500) return;
+    onCount(n);
+    setEditing(false);
+  }
+
   return (
-    <StepBlock title={ok ? "예상 페이백을 계산했어요" : "담당자가 확인 후 알려드려요"} onBack={onBack}>
+    <StepBlock title={ok ? "화환 수량과 페이백을 계산했어요" : "담당자가 확인 후 알려드려요"} onBack={onBack}>
       <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4">
         {previewSrc && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -629,12 +776,20 @@ function EstimateResult({
         )}
         <div className="min-w-0">
           {ok ? (
-            <>
-              <p className="text-[12px] text-muted">예상 페이백</p>
-              <p className="text-[22px] font-extrabold leading-tight tabular-nums">
-                {formatKRW(estimate.lowPayback)} ~ {formatKRW(estimate.highPayback)}
+            showRange ? (
+              <>
+                <p className="text-[12px] text-muted">
+                  {effectiveCount !== null ? `화환 ${count !== null ? "" : "약 "}${effectiveCount}개 · 예상 페이백` : "예상 페이백"}
+                </p>
+                <p className="text-[22px] font-extrabold leading-tight tabular-nums">
+                  {formatKRW(low)} ~ {formatKRW(high)}
+                </p>
+              </>
+            ) : (
+              <p className="text-[13.5px] leading-relaxed">
+                사진 가장자리에서 화환이 잘린 것 같아요. 전체 수량을 직접 입력해 주세요.
               </p>
-            </>
+            )
           ) : (
             <p className="text-[13.5px] leading-relaxed text-muted">
               사진만으로는 정확한 산정이 어려워요. 아래 정보를 입력해 주시면 담당자가 확인하고 금액을 안내해 드릴게요.
@@ -643,18 +798,63 @@ function EstimateResult({
         </div>
       </div>
 
+      {ok && showInput && (
+        <div className="mt-4 rounded-xl border border-border p-4">
+          <label className="block text-[13.5px] font-medium">전체 화환 수량</label>
+          <div className="mt-2 flex gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={500}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="예) 12"
+              className="h-12 min-w-0 flex-1 rounded-lg border border-border px-4 text-[15px]"
+            />
+            <button
+              type="button"
+              onClick={applyDraft}
+              disabled={!draft}
+              className="hover-lift h-12 shrink-0 rounded-lg bg-brand px-5 text-[14px] font-semibold text-white disabled:opacity-40"
+            >
+              적용
+            </button>
+          </div>
+          <p className="mt-1.5 text-[12px] text-muted">입력하신 수량에 맞춰 예상 페이백을 다시 계산해요.</p>
+        </div>
+      )}
+
       {ok && (
         <ul className="mt-4 space-y-1.5 text-[13px] leading-relaxed text-muted">
           {estimate.notes && <li>· AI 판독: {estimate.notes}</li>}
-          {estimate.visibleCount > 0 && <li>· 사진에서 확인된 화환 약 {estimate.visibleCount}개</li>}
-          <li>· 사진 기준 예상 금액이에요. 현장 수량·상태 확인 후 최종 금액이 확정됩니다.</li>
+          {!needsInput && count === null && estimate.visibleCount > 0 && (
+            <li>
+              · 사진에서 확인된 화환 약 {estimate.visibleCount}개{" "}
+              {!editing && (
+                <button type="button" onClick={() => setEditing(true)} className="font-medium text-brand-dark underline">
+                  수량이 달라요
+                </button>
+              )}
+            </li>
+          )}
+          {count !== null && !editing && (
+            <li>
+              · 직접 입력한 수량 {count}개 기준이에요.{" "}
+              <button type="button" onClick={() => { setDraft(String(count)); setEditing(true); }} className="font-medium text-brand-dark underline">
+                수정
+              </button>
+            </li>
+          )}
+          <li>· 페이백 비율은 자동 반영됐어요. 사진 기준 예상 금액이며 현장 수량·상태 확인 후 최종 금액이 확정됩니다.</li>
         </ul>
       )}
 
       <button
         type="button"
         onClick={onNext}
-        className="hover-lift mt-8 flex h-14 w-full items-center justify-center rounded-xl bg-brand text-[16px] font-semibold text-white"
+        disabled={!canNext}
+        className="hover-lift mt-8 flex h-14 w-full items-center justify-center rounded-xl bg-brand text-[16px] font-semibold text-white disabled:opacity-40"
       >
         {ok ? "이 금액으로 계속하기" : "계속하기"}
       </button>

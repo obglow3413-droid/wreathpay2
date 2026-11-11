@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import NotifyButton from "@/components/status/NotifyButton";
 import StatusBadge from "@/components/admin/StatusBadge";
 import StatusTimeline from "@/components/status/StatusTimeline";
 import { formatKRW } from "@/lib/pricing";
@@ -31,11 +32,43 @@ export default function LookupForm({ initialRequestNo }: { initialRequestNo: str
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LookupResult | null>(null);
 
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const credsRef = useRef({ requestNo: "", phone: "" });
+  const [lookedPhone, setLookedPhone] = useState("");
+
+  // 진행 중인 건은 20초마다 자동 갱신(관리자가 상태를 바꾸면 화면에 바로 반영)
+  const refresh = useCallback(async () => {
+    const { requestNo: rn, phone: ph } = credsRef.current;
+    if (!rn || !ph) return;
+    try {
+      const res = await fetch("/api/status/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestNo: rn, phone: ph }),
+      });
+      if (res.ok) {
+        setResult((await res.json()) as LookupResult);
+        setLastUpdated(new Date());
+      }
+    } catch {}
+  }, []);
+
+  const active = result && result.status !== "settled" && result.status !== "cancelled";
+  useEffect(() => {
+    if (!active) return;
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") refresh();
+    }, 20000);
+    return () => clearInterval(t);
+  }, [active, refresh]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResult(null);
+    credsRef.current = { requestNo, phone };
+    setLookedPhone(phone);
     try {
       const res = await fetch("/api/status/lookup", {
         method: "POST",
@@ -44,7 +77,10 @@ export default function LookupForm({ initialRequestNo }: { initialRequestNo: str
       });
       const json = await res.json();
       if (!res.ok) setError(json.error ?? "조회에 실패했어요.");
-      else setResult(json as LookupResult);
+      else {
+        setResult(json as LookupResult);
+        setLastUpdated(new Date());
+      }
     } catch {
       setError("네트워크 오류가 발생했어요. 다시 시도해주세요.");
     } finally {
@@ -90,9 +126,28 @@ export default function LookupForm({ initialRequestNo }: { initialRequestNo: str
             <StatusBadge status={result.status} />
           </div>
 
+          {(result.status === "dispatched" || result.status === "collecting") && (
+            <div className="mt-4 rounded-lg bg-brand-tint px-4 py-3">
+              <p className="text-[14px] font-bold text-brand-dark">
+                {result.status === "collecting"
+                  ? `🚚 꽃페이 전담기사님이 ${result.pickupDate} 수거를 위해 이동 중입니다`
+                  : `꽃페이 전담기사님이 배정됐어요 · 수거 예정일 ${result.pickupDate}`}
+              </p>
+              <p className="mt-0.5 text-[12px] text-muted">
+                담당자가 상태를 바꾸면 이 화면에 바로 반영돼요.
+              </p>
+            </div>
+          )}
+
           <div className="mt-5">
             <StatusTimeline status={result.status} />
           </div>
+          {active && lastUpdated && (
+            <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-muted-light">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-brand" />
+              실시간 확인 중 · 마지막 확인 {lastUpdated.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+            </p>
+          )}
 
           <div className="mt-5 grid grid-cols-2 gap-y-1.5 border-t border-border pt-4 text-[13px] text-muted">
             <span>{EVENT_TYPE_LABEL[result.eventType]}</span>
@@ -117,6 +172,12 @@ export default function LookupForm({ initialRequestNo }: { initialRequestNo: str
               </span>
             </div>
             )
+          )}
+
+          {active && (
+            <div className="mt-5">
+              <NotifyButton requestNo={result.requestNo} phone={lookedPhone} />
+            </div>
           )}
         </div>
       )}

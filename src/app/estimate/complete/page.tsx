@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import StatusTimeline from "@/components/status/StatusTimeline";
+import CompleteNotify from "@/components/status/CompleteNotify";
 import CopyButton from "@/components/status/CopyButton";
 import { EVENT_TYPE_LABEL, QUANTITY_RANGE_LABEL, type EventType, type QuantityRange } from "@/lib/types";
 
@@ -76,6 +77,7 @@ export default async function EstimateCompletePage({
       </p>
 
       <div className="mt-8 space-y-2.5">
+        {requestNo !== "-" && <CompleteNotify requestNo={requestNo} />}
         <Link
           href={requestNo !== "-" ? `/status/lookup?req=${encodeURIComponent(requestNo)}` : "/status/lookup"}
           className="hover-lift flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-brand py-3.5 text-[15px] font-semibold text-white"

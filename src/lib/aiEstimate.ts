@@ -16,6 +16,8 @@ export interface AiEstimateResult {
   confidence: "high" | "medium" | "low";
   isWreathPhoto: boolean;
   visibleCount: number;
+  /** 사진이 잘려 일부 화환이 프레임 밖에 있을 가능성 */
+  isCropped: boolean;
   low: { counts: GradeCounts; sale: number; payback: number };
   high: { counts: GradeCounts; sale: number; payback: number };
   notes: string;
@@ -44,6 +46,7 @@ const TOOL = {
     properties: {
       is_wreath_photo: { type: "boolean", description: "화환이 실제로 보이는 사진인지" },
       visible_wreath_count: { type: "integer", description: "사진에서 확실히 보이는 화환 수" },
+      is_cropped: { type: "boolean", description: "사진 가장자리에서 화환이 잘렸거나, 프레임 밖에 더 있을 것 같아 전체 개수를 확정하기 어려운지" },
       confidence: { type: "string", enum: ["high", "medium", "low"] },
       grades: {
         type: "object",
@@ -57,13 +60,14 @@ const TOOL = {
       },
       notes: { type: "string", description: "판단 근거를 한국어 한 문장으로 (예: 3단 생화 위주, 일부 가려짐)" },
     },
-    required: ["is_wreath_photo", "visible_wreath_count", "confidence", "grades", "notes"],
+    required: ["is_wreath_photo", "visible_wreath_count", "is_cropped", "confidence", "grades", "notes"],
   },
 } as const;
 
 interface ToolInput {
   is_wreath_photo: boolean;
   visible_wreath_count: number;
+  is_cropped?: boolean;
   confidence: "high" | "medium" | "low";
   grades: Record<keyof GradeCounts, { min: number; max: number }>;
   notes: string;
@@ -86,7 +90,7 @@ export async function runAiEstimate(
 
   const hint = options.eventTypeHint ? `행사 종류 힌트: ${options.eventTypeHint}.\n` : "";
   const prompt = `${hint}장례식장·예식장·개업식 등에서 나온 화환 사진입니다. 여러 장이면 같은 현장을 다른 각도에서 찍은 것일 수 있으니 중복해서 세지 마세요.
-사진에서 확실히 보이는 화환만 세고, 가려져서 불확실하면 범위(min~max)를 넓게 주세요. 화환이 아니면 is_wreath_photo=false로 답하세요.
+사진에서 확실히 보이는 화환만 세고, 화환이 사진 가장자리에서 잘렸거나 줄이 프레임 밖으로 이어지면 is_cropped=true로 답하고, 가려져서 불확실하면 범위(min~max)를 넓게 주세요. 화환이 아니면 is_wreath_photo=false로 답하세요.
 ${GRADE_GUIDE}
 등급별 min/max의 합이 전체 화환 수와 어긋나지 않게 해주세요. 반드시 report_estimate 도구로만 답하세요.`;
 
@@ -152,6 +156,7 @@ ${GRADE_GUIDE}
       confidence: input.confidence,
       isWreathPhoto: Boolean(input.is_wreath_photo),
       visibleCount: clamp(input.visible_wreath_count),
+      isCropped: Boolean(input.is_cropped),
       low: { counts: lowCounts, sale: lowPricing.estimatedSaleAmount, payback: roundDown(lowPricing.customerPaybackAmount) },
       high: { counts: highCounts, sale: highPricing.estimatedSaleAmount, payback: roundUp(highPricing.customerPaybackAmount) },
       notes: String(input.notes ?? "").slice(0, 200),
@@ -173,11 +178,21 @@ export interface PublicAiEstimate {
   lowPayback: number;
   highPayback: number;
   visibleCount: number;
+  isCropped: boolean;
+  /** 화환 1개당 예상 페이백(범위). 고객이 수량을 직접 입력할 때 곱해 쓴다. */
+  perWreathLow: number;
+  perWreathHigh: number;
   notes: string;
 }
 
 export function toPublicEstimate(r: AiEstimateResult): PublicAiEstimate {
+  const n = (c: GradeCounts) => c.premium + c.a + c.b + c.c;
+  const lowN = n(r.low.counts);
+  const highN = n(r.high.counts);
   return {
+    perWreathLow: lowN > 0 ? Math.floor(r.low.payback / lowN / 1000) * 1000 : 0,
+    perWreathHigh: highN > 0 ? Math.ceil(r.high.payback / highN / 1000) * 1000 : 0,
+    isCropped: r.isCropped,
     status: r.status,
     confidence: r.confidence,
     lowPayback: r.low.payback,

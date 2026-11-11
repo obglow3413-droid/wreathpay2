@@ -1,6 +1,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { notifyStatusChange } from "@/lib/notify";
 import { calculatePricing, DEFAULT_PAYBACK_RATE } from "@/lib/pricing";
 
 /**
@@ -163,6 +164,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         { onConflict: "estimate_request_id" }
       );
     }
+
+    if (body.status) await notifyStatusChange(id, String(body.status));
 
     return NextResponse.json({ ok: true, pricing });
   } catch (err) {
