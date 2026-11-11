@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import StepProgress from "./StepProgress";
+import { formatKRW } from "@/lib/pricing";
 import OptionCard from "./OptionCard";
 import {
   EVENT_TYPE_LABEL,
@@ -25,6 +26,33 @@ declare global {
 }
 
 const MAX_IMAGES = 5;
+
+interface PreviewEstimate {
+  status: "ok" | "review";
+  confidence: "high" | "medium" | "low";
+  lowPayback: number;
+  highPayback: number;
+  visibleCount: number;
+  notes: string;
+}
+
+/** 휴대폰 사진(수 MB)을 긴 변 1600px · JPEG로 줄여서 업로드/AI 분석을 빠르고 가볍게 만든다. 실패하면 원본 그대로 사용. */
+async function compressImage(file: File): Promise<File> {
+  try {
+    if (!file.type.startsWith("image/") || file.size < 400 * 1024) return file;
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" });
+  } catch {
+    return file;
+  }
+}
 
 function toYmd(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -49,7 +77,7 @@ type DataStepName =
   | "quantity"
   | "place"
   | "contact";
-type StepName = DataStepName;
+type StepName = DataStepName | "estimate";
 
 export default function EstimateWizard({
   initialBulk = false,
@@ -68,7 +96,12 @@ export default function EstimateWizard({
     return base;
   }, [initialEventType]);
 
-  const steps: StepName[] = dataSteps;
+  // 사진 다음에 "AI 예상 금액" 화면을 끼워넣음(진행률에는 포함하지 않음)
+  const steps: StepName[] = useMemo(() => {
+    const list: StepName[] = [...dataSteps];
+    list.splice(list.indexOf("photo") + 1, 0, "estimate");
+    return list;
+  }, [dataSteps]);
 
   const [stepIndex, setStepIndex] = useState(0);
   const currentStep = steps[stepIndex];
@@ -101,7 +134,51 @@ export default function EstimateWizard({
     privacy: false,
   });
 
+  // AI 예상 금액(범위) 미리보기: 사진 다음 단계에서 호출
+  const [aiState, setAiState] = useState<"idle" | "loading" | "done">("idle");
+  const [aiEstimate, setAiEstimate] = useState<PreviewEstimate | null>(null);
+  const aiSignatureRef = useRef("");
+
   const previews = useMemo(() => images.map((f) => URL.createObjectURL(f)), [images]);
+
+  // 사진 다음 "estimate" 단계: AI가 예상 금액을 계산. 쓸 수 없는 상태(키 미설정·실패)면 조용히 다음 단계로 넘어감
+  useEffect(() => {
+    if (currentStep !== "estimate") return;
+    const signature = images.map((f) => `${f.name}:${f.size}:${f.lastModified}`).join("|");
+    if (aiSignatureRef.current === signature && aiState !== "idle") return;
+    aiSignatureRef.current = signature;
+
+    let cancelled = false;
+    setAiState("loading");
+    setAiEstimate(null);
+
+    const body = new FormData();
+    images.slice(0, 3).forEach((img) => body.append("images", img));
+    if (eventType) body.append("eventType", eventType);
+
+    fetch("/api/estimate/preview", { method: "POST", body })
+      .then((r) => r.json())
+      .then((json) => {
+        if (cancelled) return;
+        if (json?.available && json.estimate) {
+          setAiEstimate(json.estimate as PreviewEstimate);
+          setAiState("done");
+        } else {
+          setAiState("idle");
+          setStepIndex((i) => Math.min(steps.length - 1, i + 1));
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAiState("idle");
+        setStepIndex((i) => Math.min(steps.length - 1, i + 1));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
 
   // 주소검색 레이어가 열리고 스크립트도 준비되면, 다음(Daum) 우편번호 검색 위젯을 그 자리에 그려줌
   useEffect(() => {
@@ -121,16 +198,22 @@ export default function EstimateWizard({
   }
   function goBack() {
     setError(null);
-    setStepIndex((i) => Math.max(0, i - 1));
+    setStepIndex((i) => {
+      let target = Math.max(0, i - 1);
+      // AI 결과가 없는(건너뛴) estimate 단계는 뒤로 갈 때도 건너뜀
+      if (steps[target] === "estimate" && aiState !== "done") target = Math.max(0, target - 1);
+      return target;
+    });
   }
 
   // 진행률 표시용 단계 번호
   const dataStepNumber = dataSteps.indexOf(currentStep as DataStepName) + 1;
 
-  function handleFiles(files: FileList | null) {
+  async function handleFiles(files: FileList | null) {
     if (!files) return;
-    const next = [...images, ...Array.from(files)].slice(0, MAX_IMAGES);
-    setImages(next);
+    const picked = Array.from(files);
+    const compressed = await Promise.all(picked.map(compressImage));
+    setImages((prev) => [...prev, ...compressed].slice(0, MAX_IMAGES));
   }
 
   function removeImage(idx: number) {
@@ -184,7 +267,7 @@ export default function EstimateWizard({
         strategy="afterInteractive"
         onLoad={() => setAddressScriptLoaded(true)}
       />
-      <StepProgress current={dataStepNumber} total={dataSteps.length} />
+      {currentStep !== "estimate" && <StepProgress current={dataStepNumber} total={dataSteps.length} />}
 
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] text-red-600">
@@ -264,6 +347,20 @@ export default function EstimateWizard({
             />
           )}
         </StepBlock>
+      )}
+
+      {currentStep === "estimate" && (
+        <>
+          {aiState !== "done" && <AnalyzingScreen previewSrc={previews[0]} />}
+          {aiState === "done" && aiEstimate && (
+            <EstimateResult
+              estimate={aiEstimate}
+              previewSrc={previews[0]}
+              onBack={goBack}
+              onNext={goNext}
+            />
+          )}
+        </>
       )}
 
       {currentStep === "eventType" && (
@@ -479,6 +576,89 @@ export default function EstimateWizard({
         </div>
       )}
     </div>
+  );
+}
+
+/** AI가 실제로 사진을 분석하는 동안 보여주는 화면 */
+function AnalyzingScreen({ previewSrc }: { previewSrc?: string }) {
+  return (
+    <div className="fade-up flex flex-col items-center py-10 text-center">
+      <div className="relative h-28 w-28 overflow-hidden rounded-2xl border border-border">
+        {previewSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewSrc} alt="업로드한 화환 사진" className="h-full w-full object-cover" />
+        ) : (
+          <div className="h-full w-full bg-surface" />
+        )}
+        <div className="absolute inset-0 animate-pulse bg-brand/10" />
+      </div>
+      <h1 className="mt-6 text-[19px] font-bold leading-snug">AI가 사진을 분석하고 있어요</h1>
+      <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
+        화환 수량과 상태를 확인해서
+        <br />
+        예상 페이백 금액을 계산하고 있어요. (10~20초)
+      </p>
+      <div className="mt-6 flex items-center gap-1.5">
+        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "0ms" }} />
+        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "200ms" }} />
+        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "400ms" }} />
+      </div>
+    </div>
+  );
+}
+
+/** AI 예상 금액 결과: 확정 금액이 아니라 범위로 안내 */
+function EstimateResult({
+  estimate,
+  previewSrc,
+  onBack,
+  onNext,
+}: {
+  estimate: PreviewEstimate;
+  previewSrc?: string;
+  onBack: () => void;
+  onNext: () => void;
+}) {
+  const ok = estimate.status === "ok";
+  return (
+    <StepBlock title={ok ? "예상 페이백을 계산했어요" : "담당자가 확인 후 알려드려요"} onBack={onBack}>
+      <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface p-4">
+        {previewSrc && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={previewSrc} alt="업로드한 화환 사진" className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+        )}
+        <div className="min-w-0">
+          {ok ? (
+            <>
+              <p className="text-[12px] text-muted">예상 페이백</p>
+              <p className="text-[22px] font-extrabold leading-tight tabular-nums">
+                {formatKRW(estimate.lowPayback)} ~ {formatKRW(estimate.highPayback)}
+              </p>
+            </>
+          ) : (
+            <p className="text-[13.5px] leading-relaxed text-muted">
+              사진만으로는 정확한 산정이 어려워요. 아래 정보를 입력해 주시면 담당자가 확인하고 금액을 안내해 드릴게요.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {ok && (
+        <ul className="mt-4 space-y-1.5 text-[13px] leading-relaxed text-muted">
+          {estimate.notes && <li>· AI 판독: {estimate.notes}</li>}
+          {estimate.visibleCount > 0 && <li>· 사진에서 확인된 화환 약 {estimate.visibleCount}개</li>}
+          <li>· 사진 기준 예상 금액이에요. 현장 수량·상태 확인 후 최종 금액이 확정됩니다.</li>
+        </ul>
+      )}
+
+      <button
+        type="button"
+        onClick={onNext}
+        className="hover-lift mt-8 flex h-14 w-full items-center justify-center rounded-xl bg-brand text-[16px] font-semibold text-white"
+      >
+        {ok ? "이 금액으로 계속하기" : "계속하기"}
+      </button>
+    </StepBlock>
   );
 }
 

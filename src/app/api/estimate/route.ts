@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { generateRequestNo } from "@/lib/pricing";
+import { filesToAiImages, isAiEstimateConfigured, runAiEstimate } from "@/lib/aiEstimate";
 import type { EventType, QuantityRange } from "@/lib/types";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 /**
  * 견적 신청 접수 API.
@@ -130,6 +132,49 @@ export async function POST(request: Request) {
           storage_path: path,
           sort_order: i,
         });
+      }
+    }
+
+    // AI 사진 견적: 신청 저장은 이미 끝났으므로, 실패해도 접수에는 영향이 없다(best-effort).
+    // 등급별 수량·금액 열은 중간값으로 채워 관리자가 바로 검토/수정할 수 있게 하고, 범위는 ai_estimate에 보관.
+    if (isAiEstimateConfigured()) {
+      try {
+        const { data: priceRows } = await supabase
+          .from("grade_prices")
+          .select("unit_price, wreath_grades(code)")
+          .eq("is_current", true);
+        const byCode: Record<string, number> = {};
+        for (const row of priceRows ?? []) {
+          const code = (row as unknown as { wreath_grades: { code: string } }).wreath_grades?.code;
+          if (code) byCode[code] = row.unit_price as number;
+        }
+        const prices =
+          byCode.premium && byCode.a && byCode.b && byCode.c
+            ? { premium: byCode.premium, a: byCode.a, b: byCode.b, c: byCode.c }
+            : undefined;
+
+        const ai = await runAiEstimate(await filesToAiImages(images), { eventTypeHint: eventType, prices });
+        if (ai) {
+          if (ai.status === "ok") {
+            const mid = (k: "premium" | "a" | "b" | "c") => Math.round((ai.low.counts[k] + ai.high.counts[k]) / 2);
+            await supabase
+              .from("estimate_requests")
+              .update({
+                grade_premium_count: mid("premium"),
+                grade_a_count: mid("a"),
+                grade_b_count: mid("b"),
+                grade_c_count: mid("c"),
+                estimated_sale_amount: Math.round((ai.low.sale + ai.high.sale) / 2),
+                customer_payback_amount: Math.round((ai.low.payback + ai.high.payback) / 2 / 1000) * 1000,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", estimateRequest.id);
+          }
+          // ai_estimate 열은 마이그레이션(supabase/migration_ai_estimate.sql) 적용 후에만 존재 — 없으면 조용히 건너뜀
+          await supabase.from("estimate_requests").update({ ai_estimate: ai }).eq("id", estimateRequest.id);
+        }
+      } catch (e) {
+        console.error("[estimate ai]", e);
       }
     }
 

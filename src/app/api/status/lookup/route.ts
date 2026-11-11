@@ -60,8 +60,26 @@ export async function POST(req: Request) {
     const customer = Array.isArray(data.customers) ? data.customers[0] : data.customers;
     if (!customer || digits(customer.phone ?? "") !== phone) return notFound;
 
+    // AI 예상 금액 범위(ai_estimate 열은 마이그레이션 적용 후에만 존재 → 실패해도 무시)
+    let aiRange: { low: number; high: number } | null = null;
+    try {
+      const { data: aiRow } = await supabase
+        .from("estimate_requests")
+        .select("ai_estimate")
+        .ilike("request_no", requestNo)
+        .maybeSingle();
+      const ai = (aiRow as { ai_estimate?: { status?: string; low?: { payback?: number }; high?: { payback?: number } } } | null)
+        ?.ai_estimate;
+      if (ai?.status === "ok" && ai.low?.payback && ai.high?.payback) {
+        aiRange = { low: ai.low.payback, high: ai.high.payback };
+      }
+    } catch {
+      aiRange = null;
+    }
+
     // 개인정보(이름·연락처·주소)는 돌려주지 않음
     return NextResponse.json({
+      aiRange,
       requestNo: data.request_no,
       eventType: data.event_type,
       quantityRange: data.quantity_range,

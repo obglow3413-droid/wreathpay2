@@ -20,6 +20,7 @@ interface LookupResult {
   pickupDate: string;
   pickupTimeSlot: string;
   paybackAmount: number;
+  aiRange: { low: number; high: number } | null;
   createdAt: string;
 }
 
@@ -100,13 +101,22 @@ export default function LookupForm({ initialRequestNo }: { initialRequestNo: str
             <span className="text-right">{result.pickupTimeSlot}</span>
           </div>
 
-          {result.paybackAmount > 0 && (
+          {(result.status === "received" || result.status === "estimating") && result.aiRange ? (
+            <div className="mt-4 rounded-lg bg-surface px-4 py-3">
+              <p className="text-[12px] text-muted">AI 예상 페이백 (현장 확인 후 확정)</p>
+              <p className="mt-0.5 text-[17px] font-extrabold tabular-nums text-brand-dark">
+                {formatKRW(result.aiRange.low)} ~ {formatKRW(result.aiRange.high)}
+              </p>
+            </div>
+          ) : (
+            result.paybackAmount > 0 && (
             <div className="mt-4 flex items-center justify-between rounded-lg bg-surface px-4 py-3">
               <span className="text-[13px] font-semibold">예상 페이백</span>
               <span className="text-[17px] font-extrabold tabular-nums text-brand-dark">
                 {formatKRW(result.paybackAmount)}
               </span>
             </div>
+            )
           )}
         </div>
       )}
