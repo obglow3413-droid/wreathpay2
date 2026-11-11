@@ -356,17 +356,24 @@ a, button {
 }
 
 
-/* 홈 화환 운송 애니메이션 */
-@keyframes truckBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-@keyframes roadMove { to { background-position-x: -48px; } }
-@keyframes wheelSpin { to { transform: rotate(360deg); } }
-@keyframes cityDrift { to { transform: translateX(-50%); } }
-@keyframes puff { 0% { opacity: .5; transform: translate(0,0) scale(.6); } 100% { opacity: 0; transform: translate(-26px,-10px) scale(1.5); } }
-.truck-body { animation: truckBob 0.9s ease-in-out infinite; }
-.truck-road { animation: roadMove 0.7s linear infinite; }
-.truck-wheel { transform-box: fill-box; transform-origin: center; animation: wheelSpin 0.6s linear infinite; }
-.truck-city { animation: cityDrift 14s linear infinite; }
-.truck-puff { animation: puff 1.4s ease-out infinite; }
+/* 홈 화환 → 현금 루프 애니메이션 (6초 주기) */
+@keyframes cwWreath {
+  0% { opacity: 0; transform: scale(.9); }
+  10%, 38% { opacity: 1; transform: scale(1) rotate(0deg); }
+  24% { transform: scale(1) rotate(-2deg); }
+  52%, 84% { opacity: .22; transform: scale(.94); }
+  96%, 100% { opacity: 1; transform: scale(1); }
+}
+@keyframes cwItem {
+  0%, 36% { opacity: 0; transform: translate(0, 0) scale(.4); }
+  44% { opacity: 1; }
+  66%, 90% { opacity: 1; transform: translate(var(--dx), var(--dy)) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 6px)) scale(1); }
+}
+@keyframes cwArrow { 0%, 34% { opacity: 0; } 44%, 80% { opacity: .5; } 92%, 100% { opacity: 0; } }
+.cw-wreath { animation: cwWreath 6s ease-in-out infinite; }
+.cw-item { transform: translate(var(--dx), var(--dy)); animation: cwItem 6s cubic-bezier(.22,.8,.3,1) infinite; }
+.cw-arrow { animation: cwArrow 6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
-  .truck-body, .truck-road, .truck-wheel, .truck-city, .truck-puff { animation: none !important; }
+  .cw-wreath, .cw-item, .cw-arrow { animation: none !important; }
 }

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useServiceTab, type ServiceKey } from "./ServiceTabContext";
 import { SERVICE_CONTENT, SERVICE_ORDER } from "./serviceContent";
-import WreathTruck from "./WreathTruck";
+import WreathCash from "./WreathCash";
 import SmallQuantitySheet from "./SmallQuantitySheet";
 
 export default function Hero() {
@@ -94,13 +94,13 @@ export default function Hero() {
             <SmallQuantitySheet ctaHref={content.ctaHref} />
           </div>
 
-          {/* 오른쪽(PC) / 아래(모바일): 화환 운송 애니메이션 */}
+          {/* 오른쪽(PC) / 아래(모바일): 화환 → 현금 애니메이션 */}
           <div
             key={`card-${active}`}
             className={`${transitionClass} mt-10 md:mt-0`}
             style={!hasInteracted ? { animationDelay: "360ms" } : undefined}
           >
-            <WreathTruck />
+            <WreathCash />
           </div>
         </div>
       </div>
