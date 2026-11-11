@@ -13,7 +13,6 @@ const NAV_ITEMS = [
   { href: "/admin/drivers", label: "기사 지원서" },
   { href: "/admin/partners", label: "업체/파트너" },
   { href: "/admin/members", label: "가입회원" },
-  { href: "/admin/gallery", label: "이용사례 갤러리" },
   { href: "/admin/settings", label: "설정" },
 ];
 

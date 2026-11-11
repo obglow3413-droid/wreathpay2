@@ -14,7 +14,14 @@ export default function SiteFooter() {
           통신판매업신고 2026-고양덕양구-0537호
         </p>
         <p className="mt-2">
-          고객센터 010-5333-3413 · 운영시간 평일 09:00 - 18:00 (주말·공휴일 휴무)
+          고객센터{" "}
+          <a href="tel:01053333413" className="underline hover:text-muted">
+            010-5333-3413
+          </a>{" "}
+          · 평일 09:00 - 18:00 (주말·공휴일 휴무) ·{" "}
+          <a href="https://d5dpz.channel.io" target="_blank" rel="noopener noreferrer" className="underline hover:text-muted">
+            채널톡 상담
+          </a>
         </p>
         <p className="mt-3 space-x-3">
           <Link href="/about" className="underline hover:text-muted">

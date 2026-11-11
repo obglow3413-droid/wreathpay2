@@ -41,16 +41,15 @@ const DATE_SHORTCUTS = [
   { label: "내일", offset: 1 },
   { label: "모레", offset: 2 },
 ];
-const ANALYZING_DURATION_MS = 1800;
 
-// 데이터를 입력받는 실제 단계 목록. "analyzing"은 진행률에는 포함하지 않는 연출용 단계.
+// 데이터를 입력받는 단계 목록
 type DataStepName =
   | "photo"
   | "eventType"
   | "quantity"
   | "place"
   | "contact";
-type StepName = DataStepName | "analyzing";
+type StepName = DataStepName;
 
 export default function EstimateWizard({
   initialBulk = false,
@@ -69,13 +68,7 @@ export default function EstimateWizard({
     return base;
   }, [initialEventType]);
 
-  // 실제 화면에 표시되는 순서: 사진 다음에 "분석 중" 연출을 끼워넣음
-  const steps: StepName[] = useMemo(() => {
-    const withAnalyzing: StepName[] = [...dataSteps];
-    const photoIdx = withAnalyzing.indexOf("photo");
-    withAnalyzing.splice(photoIdx + 1, 0, "analyzing");
-    return withAnalyzing;
-  }, [dataSteps]);
+  const steps: StepName[] = dataSteps;
 
   const [stepIndex, setStepIndex] = useState(0);
   const currentStep = steps[stepIndex];
@@ -110,15 +103,6 @@ export default function EstimateWizard({
 
   const previews = useMemo(() => images.map((f) => URL.createObjectURL(f)), [images]);
 
-  // "분석 중" 화면은 잠깐 보여준 뒤 자동으로 다음 단계로 넘어감
-  useEffect(() => {
-    if (currentStep !== "analyzing") return;
-    const timer = setTimeout(() => {
-      setStepIndex((i) => Math.min(steps.length - 1, i + 1));
-    }, ANALYZING_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [currentStep, steps.length]);
-
   // 주소검색 레이어가 열리고 스크립트도 준비되면, 다음(Daum) 우편번호 검색 위젯을 그 자리에 그려줌
   useEffect(() => {
     if (!showAddressSearch || !addressScriptLoaded || !addressContainerRef.current) return;
@@ -140,7 +124,7 @@ export default function EstimateWizard({
     setStepIndex((i) => Math.max(0, i - 1));
   }
 
-  // 진행률 표시용: "analyzing"을 제외한 실제 데이터 단계 기준 번호
+  // 진행률 표시용 단계 번호
   const dataStepNumber = dataSteps.indexOf(currentStep as DataStepName) + 1;
 
   function handleFiles(files: FileList | null) {
@@ -199,9 +183,7 @@ export default function EstimateWizard({
         strategy="afterInteractive"
         onLoad={() => setAddressScriptLoaded(true)}
       />
-      {currentStep !== "analyzing" && (
-        <StepProgress current={dataStepNumber} total={dataSteps.length} />
-      )}
+      <StepProgress current={dataStepNumber} total={dataSteps.length} />
 
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] text-red-600">
@@ -282,8 +264,6 @@ export default function EstimateWizard({
           )}
         </StepBlock>
       )}
-
-      {currentStep === "analyzing" && <AnalyzingScreen previewSrc={previews[0]} />}
 
       {currentStep === "eventType" && (
         <StepBlock title="어떤 행사의 화환인가요?" onBack={goBack}>
@@ -488,36 +468,6 @@ export default function EstimateWizard({
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-/** 사진 등록 직후 잠깐 보여주는 "분석 중" 연출 화면 */
-function AnalyzingScreen({ previewSrc }: { previewSrc?: string }) {
-  return (
-    <div className="fade-up flex flex-col items-center py-10 text-center">
-      <div className="relative h-28 w-28 overflow-hidden rounded-2xl border border-border">
-        {previewSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewSrc} alt="업로드한 화환 사진" className="h-full w-full object-cover" />
-        ) : (
-          <div className="h-full w-full bg-surface" />
-        )}
-        <div className="absolute inset-0 animate-pulse bg-brand/10" />
-      </div>
-      <h1 className="mt-6 text-[19px] font-bold leading-snug">
-        사진을 분석하고 있어요
-      </h1>
-      <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
-        화환 종류와 상태를 확인해서
-        <br />
-        예상 페이백 금액을 계산할게요.
-      </p>
-      <div className="mt-6 flex items-center gap-1.5">
-        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "0ms" }} />
-        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "200ms" }} />
-        <span className="dot-fade h-1.5 w-1.5 rounded-full bg-brand" style={{ animationDelay: "400ms" }} />
-      </div>
     </div>
   );
 }

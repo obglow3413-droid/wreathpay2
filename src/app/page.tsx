@@ -4,7 +4,6 @@ import AppBottomNav from "@/components/layout/AppBottomNav";
 import SiteFooter from "@/components/layout/SiteFooter";
 import Hero from "@/components/home/Hero";
 import LinkShareSection from "@/components/home/LinkShareSection";
-import TrustIndicators from "@/components/home/TrustIndicators";
 import LiveFeed from "@/components/home/LiveFeed";
 import SimpleSteps from "@/components/home/SimpleSteps";
 import BulkSection from "@/components/home/BulkSection";
@@ -28,7 +27,6 @@ export default function HomePage() {
       <AppTopBar />
       <main className="flex-1 pb-24">
         <Hero />
-        <TrustIndicators />
         <Reveal>
           <LiveFeed />
         </Reveal>

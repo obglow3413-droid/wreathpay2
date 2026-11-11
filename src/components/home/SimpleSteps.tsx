@@ -1,4 +1,5 @@
-import { Camera, CalendarCheck, Wallet } from "lucide-react";
+import Link from "next/link";
+import { Camera, CalendarCheck, Wallet, ChevronRight } from "lucide-react";
 
 const STEPS = [
   { icon: Camera, title: "사진 한 장", desc: "화환이 보이게 찍어서 올려요" },
@@ -32,6 +33,13 @@ export default function SimpleSteps() {
             );
           })}
         </ol>
+        <Link
+          href="/guide"
+          className="hover-arrow mt-5 inline-flex items-center gap-1 text-[13.5px] font-semibold text-muted hover:text-foreground"
+        >
+          자세한 이용안내와 자주 묻는 질문
+          <ChevronRight size={15} />
+        </Link>
       </div>
     </section>
   );

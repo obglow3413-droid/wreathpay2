@@ -2,7 +2,7 @@
 
 import Logo from "@/components/layout/Logo";
 
-import { MessageCircle, Bell } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 export default function AppTopBar() {
   return (
@@ -14,18 +14,10 @@ export default function AppTopBar() {
           target="_blank"
           rel="noopener noreferrer"
           className="hover-lift flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-surface"
-          aria-label="상담하기"
+          aria-label="채널톡 상담"
         >
           <MessageCircle size={20} strokeWidth={1.8} />
         </a>
-        <button
-          type="button"
-          onClick={() => alert("알림 기능은 준비 중이에요. 곧 만나보실 수 있어요!")}
-          className="hover-lift flex h-9 w-9 items-center justify-center rounded-full text-muted hover:bg-surface"
-          aria-label="알림"
-        >
-          <Bell size={20} strokeWidth={1.8} />
-        </button>
       </div>
     </header>
   );

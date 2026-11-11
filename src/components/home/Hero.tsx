@@ -112,10 +112,6 @@ export default function Hero() {
                 <p className="mt-1 text-[11.5px] text-muted">JPG, PNG · 최대 10MB</p>
               </div>
 
-              <div className="mt-4 flex items-center justify-center gap-1 text-[12px] font-medium text-muted">
-                가입 없이 바로 확인
-                <ChevronRight size={13} className="text-muted" />
-              </div>
             </Link>
           </div>
         </div>
