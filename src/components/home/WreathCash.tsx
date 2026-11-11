@@ -8,15 +8,26 @@ const PETALS = Array.from({ length: 10 }, (_, i) => {
   return { x: Math.cos(a) * 34, y: Math.sin(a) * 34, c: ["var(--brass)", "var(--sage)", "var(--paper)"][i % 3] };
 });
 
-const COINS = [
-  { dx: 190, dy: 82, delay: 0.0 },
-  { dx: 226, dy: 96, delay: 0.18 },
-  { dx: 208, dy: 66, delay: 0.36 },
-  { dx: 246, dy: 78, delay: 0.54 },
-];
+// 쌓이는 현금 더미(좌표는 viewBox 기준). 아래쪽부터 쌓이도록 뒤쪽 delay일수록 위로.
 const BILLS = [
-  { dx: 196, dy: 112, delay: 0.1, rot: -8 },
-  { dx: 236, dy: 118, delay: 0.3, rot: 6 },
+  { dx: 214, dy: 150, delay: 0.0, rot: -6 },
+  { dx: 262, dy: 154, delay: 0.1, rot: 5 },
+  { dx: 310, dy: 150, delay: 0.2, rot: -4 },
+  { dx: 236, dy: 134, delay: 0.35, rot: 8 },
+  { dx: 286, dy: 136, delay: 0.45, rot: -9 },
+  { dx: 262, dy: 118, delay: 0.6, rot: 3 },
+];
+const COINS = [
+  { dx: 200, dy: 172, delay: 0.05 },
+  { dx: 232, dy: 170, delay: 0.15 },
+  { dx: 300, dy: 172, delay: 0.25 },
+  { dx: 334, dy: 168, delay: 0.3 },
+  { dx: 218, dy: 112, delay: 0.5 },
+  { dx: 252, dy: 98, delay: 0.65 },
+  { dx: 290, dy: 106, delay: 0.7 },
+  { dx: 322, dy: 126, delay: 0.55 },
+  { dx: 270, dy: 82, delay: 0.85 },
+  { dx: 240, dy: 80, delay: 0.95 },
 ];
 
 export default function WreathCash() {
@@ -28,7 +39,7 @@ export default function WreathCash() {
     >
       <svg viewBox="0 0 400 220" className="block h-auto w-full" aria-hidden="true">
         {/* 바닥 그림자 */}
-        <ellipse cx="270" cy="186" rx="86" ry="8" fill="var(--foreground)" opacity="0.08" />
+        <ellipse cx="268" cy="188" rx="104" ry="9" fill="var(--foreground)" opacity="0.08" />
 
         {/* 화환 + 스탠드 */}
         <g className="cw-wreath" style={{ transformOrigin: "110px 98px" }}>
@@ -46,8 +57,8 @@ export default function WreathCash() {
 
         {/* 화살표 */}
         <g className="cw-arrow" opacity="0.5">
-          <path d="M170 98 H212" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 7" />
-          <path d="M206 91 L214 98 L206 105" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M168 98 H196" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeDasharray="2 7" />
+          <path d="M190 91 L198 98 L190 105" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </g>
 
         {/* 지폐 */}
