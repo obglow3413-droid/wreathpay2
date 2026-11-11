@@ -354,26 +354,3 @@ a, button {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-
-
-/* 홈 화환 → 현금 루프 애니메이션 (6초 주기) */
-@keyframes cwWreath {
-  0% { opacity: 0; transform: scale(.9); }
-  10%, 38% { opacity: 1; transform: scale(1) rotate(0deg); }
-  24% { transform: scale(1) rotate(-2deg); }
-  52%, 84% { opacity: .22; transform: scale(.94); }
-  96%, 100% { opacity: 1; transform: scale(1); }
-}
-@keyframes cwItem {
-  0%, 36% { opacity: 0; transform: translate(0, 0) scale(.4); }
-  44% { opacity: 1; }
-  66%, 90% { opacity: 1; transform: translate(var(--dx), var(--dy)) scale(1); }
-  100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 6px)) scale(1); }
-}
-@keyframes cwArrow { 0%, 34% { opacity: 0; } 44%, 80% { opacity: .5; } 92%, 100% { opacity: 0; } }
-.cw-wreath { animation: cwWreath 6s ease-in-out infinite; }
-.cw-item { transform: translate(var(--dx), var(--dy)); animation: cwItem 6s cubic-bezier(.22,.8,.3,1) infinite; }
-.cw-arrow { animation: cwArrow 6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .cw-wreath, .cw-item, .cw-arrow { animation: none !important; }
-}

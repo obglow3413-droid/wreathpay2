@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useServiceTab, type ServiceKey } from "./ServiceTabContext";
 import { SERVICE_CONTENT, SERVICE_ORDER } from "./serviceContent";
-import WreathCash from "./WreathCash";
 import SmallQuantitySheet from "./SmallQuantitySheet";
 
 export default function Hero() {
@@ -50,7 +49,7 @@ export default function Hero() {
           ))}
         </div>
 
-        <div className="mt-8 md:grid md:min-h-[520px] md:grid-cols-[55fr_45fr] md:items-center md:gap-14">
+        <div className="mt-8 md:min-h-[420px] md:max-w-[640px]">
           {/* 왼쪽: 헤드라인 → 설명 → CTA 순으로 등장(첫 진입에만 스태거) */}
           <div key={`copy-${active}`}>
             <p
@@ -94,14 +93,6 @@ export default function Hero() {
             <SmallQuantitySheet ctaHref={content.ctaHref} />
           </div>
 
-          {/* 오른쪽(PC) / 아래(모바일): 화환 → 현금 애니메이션 */}
-          <div
-            key={`card-${active}`}
-            className={`${transitionClass} mt-10 md:mt-0`}
-            style={!hasInteracted ? { animationDelay: "360ms" } : undefined}
-          >
-            <WreathCash />
-          </div>
         </div>
       </div>
     </section>
