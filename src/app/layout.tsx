@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://wreathpay-up6f.vercel.app"),
+  metadataBase: new URL("https://kkotpay.kr"),
   title: {
     default: "꽃깞 - 세상의 모든 화환을 페이백 합니다.",
     template: "%s | 꽃깞",

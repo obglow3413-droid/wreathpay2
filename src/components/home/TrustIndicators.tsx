@@ -1,19 +1,21 @@
-const TRUST_ITEMS = [
-  { value: "수거비용 0원", label: "" },
-  { value: "사진 1장이면 충분", label: "" },
-  { value: "가입 없이 바로 확인", label: "" },
-];
+"use client";
+
+import { useServiceTab } from "./ServiceTabContext";
+import { SERVICE_CONTENT } from "./serviceContent";
 
 export default function TrustIndicators() {
+  const { active } = useServiceTab();
+  const items = SERVICE_CONTENT[active].points;
+
   return (
-    <section className="border-t border-[#DCD8CF] bg-white">
+    <section className="border-t border-line bg-ivory">
       <div className="mx-auto grid max-w-[1120px] grid-cols-3 gap-3 px-5 py-7 md:gap-6 md:px-8 md:py-9">
-        {TRUST_ITEMS.map((item) => (
+        {items.map((item) => (
           <div
-            key={item.value}
-            className="rounded-2xl border border-[#DCD8CF] bg-white px-3 py-4 text-center md:py-5"
+            key={item}
+            className="rounded-2xl border border-line bg-paper px-3 py-4 text-center md:py-5"
           >
-            <p className="text-[13.5px] font-bold text-[#1D211F] md:text-[15px]">{item.value}</p>
+            <p className="break-keep text-[13px] font-bold text-foreground md:text-[15px]">{item}</p>
           </div>
         ))}
       </div>

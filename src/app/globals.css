@@ -25,6 +25,78 @@
   --brand: var(--forest);
   --brand-dark: var(--ink);
   --brand-tint: #e7ebe4;
+
+  /* 반전(어두운) 섹션용 토큰 */
+  --inverse-bg: #0a1b16;
+  --inverse-fg: #f6f3ec;
+}
+
+/*
+ * 홈 화면 테마 (data-theme 래퍼 안에서만 적용)
+ * - celebration: 개업·축하화환 = 화이트 / 모던 / 밝음
+ * - funeral: 근조화환 = 블랙 / 모던 / 엄숙
+ * var() 참조는 정의된 요소에서 계산되므로 파생 토큰도 테마 안에서 다시 정의한다.
+ */
+[data-theme="celebration"] {
+  --ink: #111513;
+  --forest: #17201c;
+  --ivory: #ffffff;
+  --paper: #f6f6f3;
+  --brass: #a8863f;
+  --sage: #e2e4de;
+  --text: #161a18;
+  --muted-tone: #6b716d;
+  --line: #e7e8e3;
+  --background: #ffffff;
+  --foreground: #161a18;
+  --muted: #6b716d;
+  --muted-light: #9aa09b;
+  --border: #e7e8e3;
+  --surface: #f6f6f3;
+  --white: #ffffff;
+  --brand: #17201c;
+  --brand-dark: #0d110f;
+  --brand-tint: #eef0ea;
+  --inverse-bg: #f1f2ee;
+  --inverse-fg: #161a18;
+}
+
+[data-theme="funeral"] {
+  --ink: #000000;
+  --forest: #ecebe6;
+  --ivory: #0b0b0c;
+  --paper: #141416;
+  --brass: #b8b2a2;
+  --sage: #34343a;
+  --text: #ecebe6;
+  --muted-tone: #9a9a96;
+  --line: #2a2a2e;
+  --background: #0b0b0c;
+  --foreground: #ecebe6;
+  --muted: #9a9a96;
+  --muted-light: #75757a;
+  --border: #2a2a2e;
+  --surface: #141416;
+  --white: #141416;
+  --brand: #ecebe6;
+  --brand-dark: #ffffff;
+  --brand-tint: #1d1d20;
+  --inverse-bg: #18181b;
+  --inverse-fg: #ecebe6;
+}
+
+[data-theme] {
+  background: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* 근조 테마일 때 오버스크롤 영역까지 검정으로 */
+html:has([data-theme="funeral"]) body {
+  background: #0b0b0c;
+}
+html:has([data-theme="celebration"]) body {
+  background: #ffffff;
 }
 
 @theme inline {
@@ -45,6 +117,9 @@
   --color-paper: var(--paper);
   --color-brass: var(--brass);
   --color-sage: var(--sage);
+  --color-line: var(--line);
+  --color-inverse-bg: var(--inverse-bg);
+  --color-inverse-fg: var(--inverse-fg);
   /* 영문·숫자는 헬베티카 계열(Helvetica Neue/Arial) 우선, 한글은 Pretendard로 자연스럽게 폴백 */
   --font-sans: "Helvetica Neue", Helvetica, Arial, var(--font-pretendard), -apple-system,
     BlinkMacSystemFont, "Malgun Gothic", sans-serif;
@@ -124,7 +199,7 @@ a, button {
   }
 }
 
-/* 탭 콘텐츠 전환(화환↔화분 등): opacity + 10px, 250ms 이내로 짧고 가볍게 */
+/* 탭 콘텐츠 전환(개업↔근조 등): opacity + 10px, 250ms 이내로 짧고 가볍게 */
 @media (prefers-reduced-motion: no-preference) {
   .tab-fade {
     animation: tabFade 250ms var(--ease-premium) both;
