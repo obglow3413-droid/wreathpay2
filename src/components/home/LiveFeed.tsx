@@ -2,12 +2,15 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { EVENT_TYPE_LABEL, QUANTITY_RANGE_LABEL, type EventType, type QuantityRange } from "@/lib/types";
 import CountUpNumber from "./CountUpNumber";
+import CountUpAmount from "./CountUpAmount";
 import LiveTicker, { type TickerItem } from "./LiveTicker";
 
 interface FeedData {
   items: TickerItem[];
   todayCount: number;
   weekCount: number;
+  returnedAmount: number;
+  returnedCount: number;
 }
 
 /** 주소에서 "시/도 + 구/군" 정도까지만 노출 (개인정보 보호, 상세주소는 제외) */
@@ -26,7 +29,7 @@ function toRelativeTime(iso: string): string {
 }
 
 async function getFeed(): Promise<FeedData> {
-  const empty: FeedData = { items: [], todayCount: 0, weekCount: 0 };
+  const empty: FeedData = { items: [], todayCount: 0, weekCount: 0, returnedAmount: 0, returnedCount: 0 };
   if (!isServiceRoleConfigured()) return empty;
 
   try {
@@ -36,7 +39,7 @@ async function getFeed(): Promise<FeedData> {
     const todayIso = new Date(startOfDay.getTime() - 9 * 3600 * 1000).toISOString();
     const weekIso = new Date(Date.now() - 7 * 86400000).toISOString();
 
-    const [{ data }, { count: todayCount }, { count: weekCount }] = await Promise.all([
+    const [{ data }, { count: todayCount }, { count: weekCount }, { data: returned }] = await Promise.all([
       supabase
         .from("estimate_requests")
         .select("id, event_type, quantity_range, address, customer_payback_amount, created_at, status")
@@ -53,11 +56,22 @@ async function getFeed(): Promise<FeedData> {
         .select("id", { count: "exact", head: true })
         .neq("status", "cancelled")
         .gte("created_at", weekIso),
+      // 실제로 수거가 끝난(수거완료·정산완료) 건의 페이백 합계 = 지금까지 돌려드린 금액
+      supabase
+        .from("estimate_requests")
+        .select("customer_payback_amount")
+        .in("status", ["collected", "settled"])
+        .limit(5000),
     ]);
+
+    const returnedRows = returned ?? [];
+    const returnedAmount = returnedRows.reduce((sum, r) => sum + (r.customer_payback_amount ?? 0), 0);
 
     return {
       todayCount: todayCount ?? 0,
       weekCount: weekCount ?? 0,
+      returnedAmount,
+      returnedCount: returnedRows.length,
       items: (data ?? []).map((row) => ({
         id: row.id,
         kind: row.event_type === "funeral" ? ("funeral" as const) : ("celebration" as const),
@@ -73,7 +87,7 @@ async function getFeed(): Promise<FeedData> {
 }
 
 export default async function LiveFeed() {
-  const { items, todayCount, weekCount } = await getFeed();
+  const { items, todayCount, weekCount, returnedAmount, returnedCount } = await getFeed();
 
   return (
     <section className="border-t border-line bg-ivory">
@@ -93,19 +107,33 @@ export default async function LiveFeed() {
               신청이 들어오고 있어요
             </h2>
 
+            {/* 실제 데이터가 있는 항목만 노출 (0건·0원은 보여주지 않음) */}
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-line bg-paper px-4 py-4">
-                <p className="text-[12px] text-muted">오늘 접수</p>
-                <p className="mt-1 text-[26px] font-extrabold leading-none">
-                  <CountUpNumber value={todayCount} suffix="건" />
-                </p>
-              </div>
-              <div className="rounded-2xl border border-line bg-paper px-4 py-4">
-                <p className="text-[12px] text-muted">최근 7일</p>
-                <p className="mt-1 text-[26px] font-extrabold leading-none">
-                  <CountUpNumber value={weekCount} suffix="건" />
-                </p>
-              </div>
+              {returnedAmount > 0 && (
+                <div className="col-span-2 rounded-2xl border border-line bg-paper px-4 py-4">
+                  <p className="text-[12px] text-muted">지금까지 돌려드린 금액</p>
+                  <p className="mt-1 text-[28px] font-extrabold leading-none">
+                    <CountUpAmount amount={returnedAmount} />
+                  </p>
+                  <p className="mt-1.5 text-[11.5px] text-muted-light">수거 완료 {returnedCount}건 기준</p>
+                </div>
+              )}
+              {todayCount > 0 && (
+                <div className="rounded-2xl border border-line bg-paper px-4 py-4">
+                  <p className="text-[12px] text-muted">오늘 접수</p>
+                  <p className="mt-1 text-[26px] font-extrabold leading-none">
+                    <CountUpNumber value={todayCount} suffix="건" />
+                  </p>
+                </div>
+              )}
+              {weekCount > 0 && (
+                <div className="rounded-2xl border border-line bg-paper px-4 py-4">
+                  <p className="text-[12px] text-muted">최근 7일</p>
+                  <p className="mt-1 text-[26px] font-extrabold leading-none">
+                    <CountUpNumber value={weekCount} suffix="건" />
+                  </p>
+                </div>
+              )}
             </div>
             <p className="mt-3 text-[12px] text-muted-light">개인정보는 표시하지 않아요.</p>
           </div>
