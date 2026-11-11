@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Camera, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useServiceTab, type ServiceKey } from "./ServiceTabContext";
 import { SERVICE_CONTENT, SERVICE_ORDER } from "./serviceContent";
+import WreathTruck from "./WreathTruck";
 import SmallQuantitySheet from "./SmallQuantitySheet";
 
 export default function Hero() {
@@ -93,28 +94,13 @@ export default function Hero() {
             <SmallQuantitySheet ctaHref={content.ctaHref} />
           </div>
 
-          {/* 오른쪽(PC) / 아래(모바일): 사진 견적 카드 */}
+          {/* 오른쪽(PC) / 아래(모바일): 화환 운송 애니메이션 */}
           <div
             key={`card-${active}`}
-            className={`${transitionClass} mt-8 md:mt-0`}
+            className={`${transitionClass} mt-10 md:mt-0`}
             style={!hasInteracted ? { animationDelay: "360ms" } : undefined}
           >
-            <Link
-              href={content.ctaHref}
-              className="hover-lift block rounded-[20px] border border-line bg-paper p-6 shadow-[0_12px_30px_-22px_rgba(0,0,0,0.35)] md:p-8"
-            >
-              <p className="text-[15.5px] font-bold text-foreground md:text-[17px]">{content.cardTitle}</p>
-              <p className="mt-1.5 text-[13px] text-muted">{content.cardDesc}</p>
-
-              <div className="upload-card mt-6 flex flex-col items-center justify-center rounded-[14px] border border-dashed border-sage bg-ivory px-6 py-10 text-center">
-                <div className="upload-card-icon flex h-11 w-11 items-center justify-center rounded-full border border-sage bg-paper text-foreground">
-                  <Camera size={20} strokeWidth={1.6} />
-                </div>
-                <p className="mt-3 text-[14px] font-semibold text-foreground">{content.uploadLabel}</p>
-                <p className="mt-1 text-[11.5px] text-muted">JPG, PNG · 최대 10MB</p>
-              </div>
-
-            </Link>
+            <WreathTruck />
           </div>
         </div>
       </div>

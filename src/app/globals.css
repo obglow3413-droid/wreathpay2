@@ -354,3 +354,19 @@ a, button {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+
+/* 홈 화환 운송 애니메이션 */
+@keyframes truckBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes roadMove { to { background-position-x: -48px; } }
+@keyframes wheelSpin { to { transform: rotate(360deg); } }
+@keyframes cityDrift { to { transform: translateX(-50%); } }
+@keyframes puff { 0% { opacity: .5; transform: translate(0,0) scale(.6); } 100% { opacity: 0; transform: translate(-26px,-10px) scale(1.5); } }
+.truck-body { animation: truckBob 0.9s ease-in-out infinite; }
+.truck-road { animation: roadMove 0.7s linear infinite; }
+.truck-wheel { transform-box: fill-box; transform-origin: center; animation: wheelSpin 0.6s linear infinite; }
+.truck-city { animation: cityDrift 14s linear infinite; }
+.truck-puff { animation: puff 1.4s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .truck-body, .truck-road, .truck-wheel, .truck-city, .truck-puff { animation: none !important; }
+}

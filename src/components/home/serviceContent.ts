@@ -8,9 +8,6 @@ export interface ServiceContent {
   ctaLabel: string;
   ctaHref: string;
   footNote: string;
-  cardTitle: string;
-  cardDesc: string;
-  uploadLabel: string;
 }
 
 export const SERVICE_ORDER: ServiceKey[] = ["celebration", "funeral"];
@@ -24,9 +21,6 @@ export const SERVICE_CONTENT: Record<ServiceKey, ServiceContent> = {
     ctaLabel: "축하화환 페이백 받기",
     ctaHref: "/estimate?eventType=opening",
     footNote: "수거비용 0원 · 가입 없이 신청 · 평일 09:00–18:00 상담",
-    cardTitle: "사진 올리고 페이백 확인하기",
-    cardDesc: "화환 등급별 시세도 함께 안내해 드려요.",
-    uploadLabel: "축하화환 사진 올리기",
   },
   funeral: {
     tabLabel: "근조화환",
@@ -36,8 +30,5 @@ export const SERVICE_CONTENT: Record<ServiceKey, ServiceContent> = {
     ctaLabel: "근조화환 수거 신청",
     ctaHref: "/estimate?eventType=funeral",
     footNote: "수거비용 0원 · 가입 없이 신청 · 평일 09:00–18:00 상담",
-    cardTitle: "사진 올리고 수거 가능 여부 확인하기",
-    cardDesc: "장례식장·상가 위치만 알려주시면 됩니다.",
-    uploadLabel: "근조화환 사진 올리기",
   },
 };
