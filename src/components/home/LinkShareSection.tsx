@@ -17,7 +17,7 @@ const ROLES: Record<ServiceKey, RoleCard[]> = {
       key: "friend",
       label: "친구에게",
       big: "야, 화환까지 네가 챙길 필요는 없잖아.",
-      small: "행사 끝나면 꽃깞이 회수와 정리를 도와준대.",
+      small: "행사 끝나면 KKOT PAY가 회수와 정리를 도와준대.",
     },
     {
       key: "ceo",
@@ -42,7 +42,7 @@ const ROLES: Record<ServiceKey, RoleCard[]> = {
     {
       key: "friend",
       label: "지인에게",
-      big: "근조화환 정리, 꽃깞에 맡겨보시라고 전해주세요.",
+      big: "근조화환 정리, KKOT PAY에 맡겨보시라고 전해주세요.",
       small: "사진 확인 후 수거 가능 여부를 안내해 드립니다.",
     },
     {
@@ -80,7 +80,7 @@ export default function LinkShareSection() {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const shareUrl = `${origin}${meta.path}?eventType=${meta.eventType}&source=share&role=${selectedRole.key}`;
     const shareText = `${selectedRole.big}\n${selectedRole.small}`;
-    const shareTitle = "꽃깞 | 행사 후 화환 정리";
+    const shareTitle = "KKOT PAY | 행사 후 화환 정리";
 
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
@@ -93,7 +93,7 @@ export default function LinkShareSection() {
 
     try {
       await navigator.clipboard.writeText(shareUrl);
-      showToast("꽃깞 링크가 복사되었습니다. 필요한 분께 전달해보세요.");
+      showToast("KKOT PAY 링크가 복사되었습니다. 필요한 분께 전달해보세요.");
     } catch {
       showToast("링크 복사에 실패했어요. 다시 시도해주세요.");
     }
@@ -110,13 +110,13 @@ export default function LinkShareSection() {
             <>
               마음은 받으셨으니,
               <br />
-              정리는 꽃깞이 하겠습니다.
+              정리는 KKOT PAY가 하겠습니다.
             </>
           ) : (
             <>
               축하는 받으세요.
               <br />
-              정리는 꽃깞이 할게요.
+              정리는 KKOT PAY가 할게요.
             </>
           )}
         </h2>

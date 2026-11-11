@@ -5,7 +5,7 @@ import BackHeader from "@/components/layout/BackHeader";
 
 export const metadata: Metadata = {
   title: "서비스소개",
-  description: "꽃깞의 화환 순환관리 시스템: 회수부터 선별, 이력관리, 페이백까지.",
+  description: "KKOT PAY의 화환 순환관리 시스템: 회수부터 선별, 이력관리, 페이백까지.",
 };
 
 const RECOVERY_FLOW = [
@@ -37,7 +37,7 @@ const STEPS = [
   {
     no: "STEP 4",
     title: "이력연결",
-    desc: "재유통되는 대상에는 꽃깞의 고유 식별정보를 부여합니다. 해당 식별정보는 태그와 QR코드로 연결되며, 회수일·분류 결과·처리 상태와 유통 단계 등을 확인하는 데 사용됩니다.",
+    desc: "재유통되는 대상에는 KKOT PAY의 고유 식별정보를 부여합니다. 해당 식별정보는 태그와 QR코드로 연결되며, 회수일·분류 결과·처리 상태와 유통 단계 등을 확인하는 데 사용됩니다.",
   },
   {
     no: "STEP 5",
@@ -116,7 +116,7 @@ const PRINCIPLES = [
 const FAQ_ITEMS = [
   {
     q: "QR이 붙으면 모두 재사용 화환인가요?",
-    a: "아닙니다. QR은 꽃깞의 회수·분류·이력정보를 연결하기 위한 수단입니다. QR 부착 여부와 법률상 재사용 화환 해당 여부는 같은 의미가 아닙니다.",
+    a: "아닙니다. QR은 KKOT PAY의 회수·분류·이력정보를 연결하기 위한 수단입니다. QR 부착 여부와 법률상 재사용 화환 해당 여부는 같은 의미가 아닙니다.",
   },
   {
     q: "QR이 법정 재사용 화환 표시를 대신하나요?",
@@ -154,7 +154,7 @@ export default function AboutPage() {
               다음 경로까지 관리합니다.
             </h1>
             <p className="mt-5 text-[14.5px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[16px]">
-              꽃깞은 행사가 끝난 화환을 회수하고 끝나는 서비스가 아닙니다.
+              KKOT PAY는 행사가 끝난 화환을 회수하고 끝나는 서비스가 아닙니다.
               <br className="hidden md:block" />
               회수된 화환을 상태에 따라 분류하고, 다시 유통되는 화환에는 식별 태그와 QR 이력을
               연결합니다. 고객은 화환이 어떻게 회수되고 어떤 방식으로 처리됐는지 확인할 수 있으며,
@@ -192,7 +192,7 @@ export default function AboutPage() {
               없습니다.
             </p>
             <p className="mt-3 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              꽃깞은 이 문제를 해결하기 위해 화환의 회수부터 선별, 인계, 재유통까지 이어지는 과정을
+              KKOT PAY는 이 문제를 해결하기 위해 화환의 회수부터 선별, 인계, 재유통까지 이어지는 과정을
               기록합니다.
             </p>
             <ul className="mt-6 space-y-2.5">
@@ -213,10 +213,10 @@ export default function AboutPage() {
         <section className="border-b border-border bg-white px-5 py-14 md:px-8 md:py-20">
           <div className="mx-auto max-w-[760px]">
             <h2 className="text-[20px] font-bold tracking-[-0.02em] text-foreground md:text-[26px]">
-              꽃깞 순환관리 시스템
+              KKOT PAY 순환관리 시스템
             </h2>
             <p className="mt-2 text-[13.5px] leading-relaxed tracking-[-0.005em] text-muted md:text-[15px]">
-              꽃깞에 접수된 화환은 회수 가능 여부와 상태에 따라 각각 다른 경로로 이동합니다.
+              KKOT PAY에 접수된 화환은 회수 가능 여부와 상태에 따라 각각 다른 경로로 이동합니다.
             </p>
 
             <div className="mt-7 space-y-5">
@@ -245,7 +245,7 @@ export default function AboutPage() {
               화환마다 하나의 순환 식별번호
             </h2>
             <p className="mt-4 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              꽃깞을 통해 다시 유통되는 대상에는 고유한{" "}
+              KKOT PAY를 통해 다시 유통되는 대상에는 고유한{" "}
               <span className="font-semibold text-foreground">KKOT ID</span>가 부여됩니다.
             </p>
             <p className="mt-3 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
@@ -265,7 +265,7 @@ export default function AboutPage() {
               재사용 여부를 숨기지 않는 표시
             </h2>
             <p className="mt-4 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              꽃깞 순환망을 통해 재유통되는 대상에는 상태와 용도에 맞는 식별 태그를 부착합니다.
+              KKOT PAY 순환망을 통해 재유통되는 대상에는 상태와 용도에 맞는 식별 태그를 부착합니다.
               태그에는 다음 정보가 포함될 수 있습니다.
             </p>
             <ul className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -293,7 +293,7 @@ export default function AboutPage() {
                 표시하고 소비자와 유통업자에게 고지해야 합니다.
               </p>
               <p className="mt-2.5 text-[13px] leading-[1.7] tracking-[-0.005em] text-muted">
-                꽃깞의 태그와 QR 시스템은 이러한 법정 표시를 없애거나 대체하기 위한 것이 아닙니다.
+                KKOT PAY의 태그와 QR 시스템은 이러한 법정 표시를 없애거나 대체하기 위한 것이 아닙니다.
                 법령상 필요한 재사용 화환 표시를 준수하면서, 회수와 유통에 관한 추가 정보를
                 제공하기 위한 보조 이력관리 수단입니다.
               </p>
@@ -352,12 +352,12 @@ export default function AboutPage() {
               명확하게 구분합니다.
             </h2>
             <p className="mt-4 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              꽃깞은 모든 회수 화환을 재사용 화환으로 분류하지 않습니다. 현행 화훼산업법에서 말하는
+              KKOT PAY는 모든 회수 화환을 재사용 화환으로 분류하지 않습니다. 현행 화훼산업법에서 말하는
               재사용 화환은 생화를 재사용한 화환을 의미합니다. 단순히 사용했던 화환대나 부속
               자재를 활용하고 새로운 꽃으로 제작한 경우와는 법률상 판단이 다를 수 있습니다.
             </p>
             <p className="mt-3 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              따라서 꽃깞은 회수된 자원을 다음과 같이 구분해 기록합니다.
+              따라서 KKOT PAY는 회수된 자원을 다음과 같이 구분해 기록합니다.
             </p>
 
             <div className="mt-5 overflow-hidden rounded-xl border border-border">
@@ -381,7 +381,7 @@ export default function AboutPage() {
               </table>
             </div>
             <p className="mt-3 text-[12.5px] leading-relaxed tracking-[-0.005em] text-muted-light">
-              재사용 화환에 해당하는 경우에는 법정 표시 기준을 준수해야 하며, 꽃깞 QR에는 관련
+              재사용 화환에 해당하는 경우에는 법정 표시 기준을 준수해야 하며, KKOT PAY QR에는 관련
               분류정보를 추가로 연결합니다.
             </p>
           </div>
@@ -394,7 +394,7 @@ export default function AboutPage() {
               신청자가 확인할 수 있는 정보
             </h2>
             <p className="mt-3 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              꽃깞에 화환 회수를 맡긴 신청자는 접수번호를 통해 처리 진행 상황을 확인할 수 있습니다.
+              KKOT PAY에 화환 회수를 맡긴 신청자는 접수번호를 통해 처리 진행 상황을 확인할 수 있습니다.
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -462,12 +462,12 @@ export default function AboutPage() {
         <section className="border-b border-border bg-surface px-5 py-14 md:px-8 md:py-20">
           <div className="mx-auto max-w-[760px]">
             <h2 className="text-[20px] font-bold tracking-[-0.02em] text-foreground md:text-[26px]">
-              꽃깞이 만들려는 기준
+              KKOT PAY가 만들려는 기준
             </h2>
             <p className="mt-3 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
               화환의 재사용 자체가 문제가 되는 것은 아닙니다. 문제는 재사용 사실을 숨기거나, 새
               화환으로 오인하게 만들거나, 회수 이후의 경로를 아무도 확인할 수 없는 유통구조입니다.
-              꽃깞은 다음 원칙으로 화환 순환시장을 운영합니다.
+              KKOT PAY는 다음 원칙으로 화환 순환시장을 운영합니다.
             </p>
             <div className="mt-6 space-y-3">
               {PRINCIPLES.map((p) => (
@@ -512,7 +512,7 @@ export default function AboutPage() {
               확인 가능한 순환으로.
             </h2>
             <p className="mx-auto mt-4 max-w-[520px] text-[14px] leading-[1.75] tracking-[-0.005em] text-white/70 md:text-[15.5px]">
-              꽃깞은 화환을 단순히 가져가는 서비스에서 멈추지 않습니다. 누가 회수를 요청했고, 어떤
+              KKOT PAY는 화환을 단순히 가져가는 서비스에서 멈추지 않습니다. 누가 회수를 요청했고, 어떤
               상태로 확인됐으며, 재사용 가능한 자원이 어디로 이동했는지를 기록합니다. 투명하게
               회수하고, 구분해서 유통하고, 확인된 가치를 정산합니다.
             </p>

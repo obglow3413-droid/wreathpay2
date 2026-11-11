@@ -25,6 +25,22 @@ declare global {
 }
 
 const MAX_IMAGES = 5;
+
+function toYmd(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+function daysFromNow(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return toYmd(d);
+}
+const DATE_SHORTCUTS = [
+  { label: "오늘", offset: 0 },
+  { label: "내일", offset: 1 },
+  { label: "모레", offset: 2 },
+];
 const ANALYZING_DURATION_MS = 1800;
 
 // 데이터를 입력받는 실제 단계 목록. "analyzing"은 진행률에는 포함하지 않는 연출용 단계.
@@ -33,9 +49,7 @@ type DataStepName =
   | "eventType"
   | "quantity"
   | "place"
-  | "time"
-  | "contact"
-  | "agreement";
+  | "contact";
 type StepName = DataStepName | "analyzing";
 
 export default function EstimateWizard({
@@ -51,7 +65,7 @@ export default function EstimateWizard({
   const dataSteps: DataStepName[] = useMemo(() => {
     const base: DataStepName[] = ["photo"];
     if (!initialEventType) base.push("eventType");
-    base.push("quantity", "place", "time", "contact", "agreement");
+    base.push("quantity", "place", "contact");
     return base;
   }, [initialEventType]);
 
@@ -83,8 +97,8 @@ export default function EstimateWizard({
   const [placeName, setPlaceName] = useState("");
   const [address, setAddress] = useState("");
   const [addressDetail, setAddressDetail] = useState("");
-  const [pickupDate, setPickupDate] = useState("");
-  const [pickupTimeSlot, setPickupTimeSlot] = useState<PickupTimeSlot | null>(null);
+  const [pickupDate, setPickupDate] = useState(() => daysFromNow(1));
+  const [pickupTimeSlot, setPickupTimeSlot] = useState<PickupTimeSlot | null>("시간 협의");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [agreements, setAgreements] = useState({
@@ -279,11 +293,13 @@ export default function EstimateWizard({
                 key={key}
                 label={label}
                 selected={eventType === key}
-                onClick={() => setEventType(key)}
+                onClick={() => {
+                  setEventType(key);
+                  setTimeout(goNext, 180);
+                }}
               />
             ))}
           </div>
-          <NextButton disabled={!eventType} onClick={goNext} />
         </StepBlock>
       )}
 
@@ -296,17 +312,19 @@ export default function EstimateWizard({
                   key={key}
                   label={label}
                   selected={quantityRange === key}
-                  onClick={() => setQuantityRange(key)}
+                  onClick={() => {
+                    setQuantityRange(key);
+                    setTimeout(goNext, 180);
+                  }}
                 />
               )
             )}
           </div>
-          <NextButton disabled={!quantityRange} onClick={goNext} />
         </StepBlock>
       )}
 
       {currentStep === "place" && (
-        <StepBlock title="수거 장소를 알려주세요" onBack={goBack}>
+        <StepBlock title="어디로 언제 갈까요?" onBack={goBack}>
           <div className="space-y-3">
             <Field label="장소명" placeholder="예) 서울아산병원 장례식장" value={placeName} onChange={setPlaceName} />
 
@@ -340,30 +358,40 @@ export default function EstimateWizard({
                 className="h-12 w-full rounded-lg border border-border px-4 text-[15px] placeholder:text-muted-light"
               />
             </div>
-          </div>
-          <NextButton disabled={!placeName || !address} onClick={goNext} />
-        </StepBlock>
-      )}
 
-      {currentStep === "time" && (
-        <StepBlock title="수거 희망일시를 선택해주세요" onBack={goBack}>
-          <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-[13.5px] font-medium">날짜</label>
+              <label className="mb-1.5 block text-[13.5px] font-medium">수거 희망일</label>
+              <div className="grid grid-cols-3 gap-2">
+                {DATE_SHORTCUTS.map((d) => {
+                  const value = daysFromNow(d.offset);
+                  return (
+                    <OptionCard
+                      key={d.label}
+                      label={d.label}
+                      compact
+                      selected={pickupDate === value}
+                      onClick={() => setPickupDate(value)}
+                    />
+                  );
+                })}
+              </div>
               <input
                 type="date"
                 value={pickupDate}
+                min={daysFromNow(0)}
                 onChange={(e) => setPickupDate(e.target.value)}
-                className="h-12 w-full rounded-lg border border-border px-4 text-[15px]"
+                className="mt-2 h-12 w-full rounded-lg border border-border px-4 text-[15px]"
               />
             </div>
+
             <div>
               <label className="mb-1.5 block text-[13.5px] font-medium">시간대</label>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-4 gap-2">
                 {PICKUP_TIME_SLOTS.map((slot) => (
                   <OptionCard
                     key={slot}
                     label={slot}
+                    compact
                     selected={pickupTimeSlot === slot}
                     onClick={() => setPickupTimeSlot(slot)}
                   />
@@ -371,12 +399,15 @@ export default function EstimateWizard({
               </div>
             </div>
           </div>
-          <NextButton disabled={!pickupDate || !pickupTimeSlot} onClick={goNext} />
+          <NextButton
+            disabled={!placeName || !address || !pickupDate || !pickupTimeSlot}
+            onClick={goNext}
+          />
         </StepBlock>
       )}
 
       {currentStep === "contact" && (
-        <StepBlock title="연락처를 남겨주세요" onBack={goBack}>
+        <StepBlock title="마지막이에요. 연락처만 남겨주세요" onBack={goBack}>
           <div className="space-y-3">
             <Field label="이름" placeholder="이름을 입력해주세요" value={customerName} onChange={setCustomerName} />
             <Field
@@ -387,13 +418,24 @@ export default function EstimateWizard({
               type="tel"
             />
           </div>
-          <NextButton disabled={!customerName || !customerPhone} onClick={goNext} />
-        </StepBlock>
-      )}
 
-      {currentStep === "agreement" && (
-        <StepBlock title="약관에 동의해주세요" onBack={goBack}>
-          <div className="space-y-3">
+          <div className="mt-6 space-y-2">
+            <label className="flex items-center gap-3 rounded-lg bg-surface px-4 py-3.5">
+              <input
+                type="checkbox"
+                checked={allAgreed}
+                onChange={(e) =>
+                  setAgreements({
+                    disposalAuthority: e.target.checked,
+                    siteRestriction: e.target.checked,
+                    finalPriceVariation: e.target.checked,
+                    privacy: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 accent-[color:var(--brand)]"
+              />
+              <span className="text-[14px] font-semibold">약관 모두 동의</span>
+            </label>
             <AgreementRow
               checked={agreements.disposalAuthority}
               onChange={(v) => setAgreements((p) => ({ ...p, disposalAuthority: v }))}
@@ -415,9 +457,10 @@ export default function EstimateWizard({
               label="개인정보 수집 및 이용에 동의합니다."
             />
           </div>
+
           <button
             type="button"
-            disabled={!allAgreed || submitting}
+            disabled={!customerName || !customerPhone || !allAgreed || submitting}
             onClick={handleSubmit}
             className="hover-lift mt-8 flex h-14 w-full items-center justify-center rounded-xl bg-brand text-[16px] font-semibold text-white disabled:opacity-40"
           >

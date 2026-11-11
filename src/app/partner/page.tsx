@@ -28,7 +28,7 @@ const REGIONS = [
 ];
 
 const BENEFITS = [
-  "꽃깞 신청 고객에게 우선 매칭",
+  "KKOT PAY 신청 고객에게 우선 매칭",
   "화환수거·재판매 두 카테고리 동시 등록 가능",
   "지역 기반 자동 매칭",
 ];
@@ -129,7 +129,7 @@ export default function PartnerApplyPage() {
             업체를 운영 중이신가요?
           </h1>
           <p className="mt-2 text-[13.5px] leading-relaxed text-white/70">
-            꽃깞에 무료로 등록하고 더 많은 매칭 기회를 만나보세요.
+            KKOT PAY에 무료로 등록하고 더 많은 매칭 기회를 만나보세요.
           </p>
           <ul className="mt-6 space-y-2.5 text-[13px] text-white/80">
             {BENEFITS.map((item) => (

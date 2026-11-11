@@ -5,7 +5,7 @@ import Faq from "@/components/home/Faq";
 
 export const metadata: Metadata = {
   title: "이용안내",
-  description: "꽃깞 이용방법과 자주 묻는 질문을 확인해보세요.",
+  description: "KKOT PAY 이용방법과 자주 묻는 질문을 확인해보세요.",
 };
 
 export default function GuidePage() {
