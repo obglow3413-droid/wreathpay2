@@ -21,14 +21,20 @@ export const metadata: Metadata = {
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ demo?: string }>;
+}) {
+  // ?demo=1 : 시연용 예시 데이터 화면 (화면에 "예시 데이터"가 항상 표시됨)
+  const { demo } = await searchParams;
   return (
     <ServiceTabProvider>
       <AppTopBar />
       <main className="flex-1 pb-24">
         <Hero />
         <Reveal>
-          <LiveFeed />
+          <LiveFeed demo={demo === "1"} />
         </Reveal>
         <Reveal>
           <SimpleSteps />

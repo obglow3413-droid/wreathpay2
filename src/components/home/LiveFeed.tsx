@@ -28,6 +28,49 @@ function toRelativeTime(iso: string): string {
   return `${Math.floor(hours / 24)}일 전`;
 }
 
+/** 시연용 예시 데이터. 날짜별로 같은 값이 나오도록 시드 기반으로 만들며, 화면에 "예시 데이터"를 반드시 표시한다. */
+function getDemoFeed(): FeedData {
+  const kst = new Date(Date.now() + 9 * 3600 * 1000);
+  let seed = kst.getUTCFullYear() * 10000 + (kst.getUTCMonth() + 1) * 100 + kst.getUTCDate();
+  const rand = () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const between = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
+
+  const regions = ["서울 송파구", "서울 강남구", "경기 성남시", "서울 서초구", "경기 고양시", "인천 연수구", "서울 마포구", "경기 용인시"];
+  const types: { kind: "funeral" | "celebration"; label: string }[] = [
+    { kind: "funeral", label: "장례식" },
+    { kind: "celebration", label: "결혼식" },
+    { kind: "celebration", label: "개업식" },
+    { kind: "funeral", label: "장례식" },
+    { kind: "celebration", label: "기업행사" },
+  ];
+  const quantities = ["1~4개", "5~9개", "10~29개", "5~9개", "30~49개"];
+
+  const items: TickerItem[] = regions.map((region, i) => {
+    const t = types[i % types.length];
+    return {
+      id: `demo-${i}`,
+      kind: t.kind,
+      title: `${region} · ${t.label}`,
+      sub: `${quantities[between(0, quantities.length - 1)]} · ${between(2, 55)}분 전`,
+      amount: between(18, 190) * 1000,
+    };
+  });
+
+  const todayCount = between(30, 50);
+  return {
+    items,
+    todayCount,
+    weekCount: todayCount * 6 + between(0, 40),
+    returnedAmount: between(180, 260) * 100000,
+    returnedCount: between(310, 420),
+  };
+}
+
 async function getFeed(): Promise<FeedData> {
   const empty: FeedData = { items: [], todayCount: 0, weekCount: 0, returnedAmount: 0, returnedCount: 0 };
   if (!isServiceRoleConfigured()) return empty;
@@ -86,8 +129,8 @@ async function getFeed(): Promise<FeedData> {
   }
 }
 
-export default async function LiveFeed() {
-  const { items, todayCount, weekCount, returnedAmount, returnedCount } = await getFeed();
+export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
+  const { items, todayCount, weekCount, returnedAmount, returnedCount } = demo ? getDemoFeed() : await getFeed();
 
   return (
     <section className="border-t border-line bg-ivory">
@@ -99,7 +142,12 @@ export default async function LiveFeed() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brass opacity-60" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-brass" />
               </span>
-              <p className="text-[12.5px] font-semibold tracking-wide text-brass">LIVE</p>
+              <p className="text-[12.5px] font-semibold tracking-wide text-brass">{demo ? "DEMO" : "LIVE"}</p>
+              {demo && (
+                <span className="rounded-full border border-brass px-2 py-0.5 text-[10.5px] font-bold text-brass">
+                  예시 데이터 · 실제 접수 현황이 아닙니다
+                </span>
+              )}
             </div>
             <h2 className="mt-2 text-[22px] font-extrabold leading-snug md:text-[28px]">
               지금도 화환 수거
@@ -135,7 +183,9 @@ export default async function LiveFeed() {
                 </div>
               )}
             </div>
-            <p className="mt-3 text-[12px] text-muted-light">개인정보는 표시하지 않아요.</p>
+            <p className="mt-3 text-[12px] text-muted-light">
+              {demo ? "시연용 샘플 숫자입니다. 실제 서비스 화면에는 표시되지 않아요." : "개인정보는 표시하지 않아요."}
+            </p>
           </div>
 
           <div className="mt-8 md:mt-0">
