@@ -7,17 +7,17 @@ import { PackageCheck, X } from "lucide-react";
 const RULES = [
   {
     title: "1~9개 (소량)",
-    body: "수거 기사님이 도착하면 차량까지 직접 실어주셔야 해요. 소량도 페이백은 똑같이 받을 수 있어요.",
+    body: "권역별 기사님이 돌면서 실어가요. 소량도 페이백은 똑같이 받을 수 있어요.",
   },
   {
     title: "10개 이상",
-    body: "기사님이 현장에서 직접 상차합니다. 수량이 많을수록 일정 조율이 빨라요.",
+    body: "수량을 먼저 확인한 뒤 수거 일정을 조율해 안내해 드려요.",
   },
 ];
 
 /**
  * "소량도 페이백" 안내 버튼 + 하단 시트.
- * 수거 기준: 하루 기사 10분이 서울 권역을 돌며 회수하며, 5~10개 미만의 소량은 직접 실어주셔야 한다.
+ * 수거 기준: 하루 기사 10분이 서울 권역을 나눠 돌며 회수하고, 소량은 권역 기사들이 돌면서 실어간다.
  */
 export default function SmallQuantitySheet({ ctaHref }: { ctaHref: string }) {
   const [open, setOpen] = useState(false);
@@ -69,8 +69,8 @@ export default function SmallQuantitySheet({ ctaHref }: { ctaHref: string }) {
             </ul>
 
             <p className="mt-4 rounded-xl bg-surface px-4 py-3 text-[12.5px] leading-relaxed text-muted">
-              하루 기사님 10분이 서울 권역을 돌며 회수하고 있어요. 소량 수거는 기사님 동선에 맞춰 시간을 안내해 드리고,
-              도착하시면 화환을 차량까지 직접 옮겨 실어주셔야 합니다.
+              하루 기사님 10분이 서울 권역을 나눠 돌며 회수하고 있어요. 소량은 권역 기사님이 순회하면서 실어가고,
+              방문 시간대는 신청하신 일정에 맞춰 안내해 드립니다.
             </p>
 
             <Link

@@ -101,9 +101,6 @@ export default function EstimateWizard({
     privacy: false,
   });
 
-  // 소량(1~9개) 수거는 기사님 차량까지 직접 실어주셔야 한다는 안내 확인
-  const [loadingAck, setLoadingAck] = useState(false);
-
   const previews = useMemo(() => images.map((f) => URL.createObjectURL(f)), [images]);
 
   // 주소검색 레이어가 열리고 스크립트도 준비되면, 다음(Daum) 우편번호 검색 위젯을 그 자리에 그려줌
@@ -141,8 +138,7 @@ export default function EstimateWizard({
   }
 
   const isSmallOrder = quantityRange === "1-4" || quantityRange === "5-9";
-  const termsAgreed = Object.values(agreements).every(Boolean);
-  const allAgreed = termsAgreed && (!isSmallOrder || loadingAck);
+  const allAgreed = Object.values(agreements).every(Boolean);
 
   async function handleSubmit() {
     if (!eventType || !quantityRange || !pickupTimeSlot) {
@@ -406,22 +402,10 @@ export default function EstimateWizard({
 
           {isSmallOrder && (
             <div className="mt-6 rounded-xl border border-brand bg-brand-tint px-4 py-4">
-              <p className="text-[13.5px] font-bold">소량(1~9개) 수거 안내</p>
+              <p className="text-[13.5px] font-bold">소량도 페이백 받을 수 있어요</p>
               <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
-                소량도 페이백을 받을 수 있어요. 다만 하루 기사님 10분이 서울 권역을 돌며 회수하기 때문에, 기사님이
-                도착하면 화환을 차량까지 직접 실어주셔야 합니다.
+                1~9개 소량은 권역별 기사님이 돌면서 실어갑니다. 방문 시간대는 신청하신 일정에 맞춰 안내해 드려요.
               </p>
-              <label className="mt-3 flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={loadingAck}
-                  onChange={(e) => setLoadingAck(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-[color:var(--brand)]"
-                />
-                <span className="text-[13px] font-medium leading-relaxed">
-                  기사님 도착 시 차량까지 직접 실어드리겠습니다.
-                </span>
-              </label>
             </div>
           )}
 
@@ -429,7 +413,7 @@ export default function EstimateWizard({
             <label className="flex items-center gap-3 rounded-lg bg-surface px-4 py-3.5">
               <input
                 type="checkbox"
-                checked={termsAgreed}
+                checked={allAgreed}
                 onChange={(e) =>
                   setAgreements({
                     disposalAuthority: e.target.checked,
