@@ -13,6 +13,7 @@ import {
 import { formatKRW } from "@/lib/pricing";
 import StatusBadge from "@/components/admin/StatusBadge";
 import BackHeader from "@/components/layout/BackHeader";
+import StatusTimeline from "@/components/status/StatusTimeline";
 
 export const metadata: Metadata = {
   title: "접수현황",
@@ -109,6 +110,8 @@ export default async function StatusPage() {
         desc="이메일로 1초만에 가입하고, 내 신청 내역과 페이백 지급현황을 한눈에 확인해보세요."
         ctaHref="/signup"
         ctaLabel="가입 / 로그인 하러 가기"
+        secondaryHref="/status/lookup"
+        secondaryLabel="가입 없이 접수번호로 조회"
       />
     );
   }
@@ -175,6 +178,10 @@ export default async function StatusPage() {
                       {PAYOUT_STATUS_LABEL[payoutStatus]}
                     </span>
                   </div>
+                </div>
+
+                <div className="mt-4">
+                  <StatusTimeline status={r.status} />
                 </div>
 
                 {/* 기본 정보 */}
@@ -265,11 +272,15 @@ function EmptyState({
   desc,
   ctaHref,
   ctaLabel,
+  secondaryHref,
+  secondaryLabel,
 }: {
   title: string;
   desc: string;
   ctaHref?: string;
   ctaLabel?: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
 }) {
   return (
     <div className="flex min-h-dvh flex-col">
@@ -286,6 +297,14 @@ function EmptyState({
             className="hover-lift mt-6 flex h-13 w-full max-w-xs items-center justify-center rounded-xl bg-brand text-[15px] font-semibold text-white"
           >
             {ctaLabel}
+          </Link>
+        )}
+        {secondaryHref && secondaryLabel && (
+          <Link
+            href={secondaryHref}
+            className="hover-lift mt-3 flex h-13 w-full max-w-xs items-center justify-center rounded-xl border border-border text-[14.5px] font-semibold text-foreground"
+          >
+            {secondaryLabel}
           </Link>
         )}
         <ConsultButton />

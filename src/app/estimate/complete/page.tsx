@@ -68,10 +68,10 @@ export default async function EstimateCompletePage({
 
       <div className="mt-8 space-y-2.5">
         <Link
-          href="/status"
+          href={requestNo !== "-" ? `/status/lookup?req=${encodeURIComponent(requestNo)}` : "/status/lookup"}
           className="hover-lift flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-brand py-3.5 text-[15px] font-semibold text-white"
         >
-          접수현황 바로가기
+          진행상황 조회하기
         </Link>
         <a
           href="https://d5dpz.channel.io"

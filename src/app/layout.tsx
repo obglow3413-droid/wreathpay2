@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ChannelTalk from "@/components/layout/ChannelTalk";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://kkotpay.kr"),
@@ -40,7 +41,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
         <style>{`:root{--font-pretendard:'PretendardVariable';}`}</style>
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
+      <body className="min-h-full flex flex-col bg-background text-foreground">{children}
+        <ChannelTalk />
+      </body>
     </html>
   );
 }
