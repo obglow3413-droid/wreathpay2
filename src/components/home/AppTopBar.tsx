@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
+import Logo from "@/components/layout/Logo";
+
 import { MessageCircle, Bell } from "lucide-react";
 
 export default function AppTopBar() {
   return (
     <header className="flex h-14 items-center justify-between bg-ivory px-5">
-      <Link href="/" className="text-[16px] font-extrabold tracking-[0.12em] text-foreground">
-        KKOT<span className="text-brass"> GAP</span>
-      </Link>
+      <Logo />
       <div className="flex items-center gap-1">
         <a
           href="https://d5dpz.channel.io"

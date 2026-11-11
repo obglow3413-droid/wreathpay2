@@ -1,7 +1,8 @@
 "use client";
 
+import Logo from "./Logo";
+
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function SiteHeader() {
@@ -24,7 +25,7 @@ export default function SiteHeader() {
     >
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.png" alt="꽃깞" width={104} height={24} priority className="h-6 w-auto" />
+          <Logo href={null} />
         </Link>
         <Link
           href="/signup"

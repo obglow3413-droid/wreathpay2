@@ -1,6 +1,7 @@
 "use client";
 
-import Image from "next/image";
+import Logo from "@/components/layout/Logo";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -29,7 +30,7 @@ export default function AdminSidebar() {
   return (
     <aside className="flex h-dvh w-56 shrink-0 flex-col border-r border-border bg-white px-4 py-6">
       <div className="px-2">
-        <Image src="/logo.png" alt="꽃깞" width={88} height={20} className="h-5 w-auto" />
+        <Logo size="sm" />
       </div>
       <p className="mt-1 px-2 text-[12px] text-muted-light">관리자</p>
 

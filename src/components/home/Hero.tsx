@@ -30,7 +30,7 @@ export default function Hero() {
         >
           <div
             className="absolute inset-y-1 w-[calc(50%-4px)] rounded-full bg-forest transition-transform duration-300 ease-out"
-            style={{ transform: activeIndex === 0 ? "translateX(0%)" : "translateX(calc(100% + 8px))" }}
+            style={{ transform: activeIndex === 0 ? "translateX(0%)" : "translateX(100%)" }}
           />
           {SERVICE_ORDER.map((key) => (
             <button

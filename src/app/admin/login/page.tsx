@@ -1,5 +1,7 @@
 "use client";
 
+import Logo from "@/components/layout/Logo";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -31,7 +33,8 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-surface px-5">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-white p-8">
-        <h1 className="text-[19px] font-bold">꽃깞 관리자</h1>
+        <Logo href={null} />
+        <h1 className="mt-4 text-[19px] font-bold">관리자 로그인</h1>
         <p className="mt-1 text-[13.5px] text-muted">운영진 계정으로 로그인해주세요.</p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-3">

@@ -1,10 +1,11 @@
+import Logo from "./Logo";
 import Link from "next/link";
 
 export default function SiteFooter() {
   return (
     <footer className="border-t border-border bg-white">
       <div className="mx-auto max-w-5xl px-5 py-10 text-[12.5px] leading-relaxed text-muted-light">
-        <p className="font-semibold text-muted">꽃깞</p>
+        <Logo size="sm" href={null} className="opacity-80" />
         <p className="mt-2">
           상호명 (주)루우크컴퍼니 · 대표 이두형 · 사업자등록번호 230-99-03514
           <br />
@@ -26,7 +27,7 @@ export default function SiteFooter() {
             업체·파트너 등록
           </Link>
         </p>
-        <p className="mt-4">© 꽃깞. All rights reserved.</p>
+        <p className="mt-4">© KKOT PAY. All rights reserved.</p>
       </div>
     </footer>
   );
