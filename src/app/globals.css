@@ -412,3 +412,71 @@ a, button {
   .logo-pay, .logo-spark { animation: none !important; }
   .logo-pay { background-position: 50% 0; }
 }
+
+/* ───────── 버튼 프리미엄 인터랙션 (전역) ─────────
+ * 1) 메인 버튼(a/button.bg-brand): 안쪽 하이라이트 + 그림자 + hover 시 광택 스윕 + 살짝 떠오름
+ * 2) 모든 버튼/카드형 링크: 눌렀을 때 살짝 눌림, 키보드 포커스 시 브랜드 링
+ */
+a.bg-brand, button.bg-brand {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 20px -12px rgba(23, 20, 18, 0.55);
+  transition: transform 220ms var(--ease-premium), box-shadow 220ms var(--ease-premium), filter 220ms ease;
+}
+a.bg-brand::after, button.bg-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.42) 50%, transparent 62%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+[data-theme="funeral"] a.bg-brand::after, [data-theme="funeral"] button.bg-brand::after {
+  background: linear-gradient(105deg, transparent 38%, color-mix(in srgb, var(--brass) 38%, transparent) 50%, transparent 62%);
+}
+[data-theme="funeral"] a.bg-brand, [data-theme="funeral"] button.bg-brand {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 26px -14px color-mix(in srgb, var(--brass) 70%, transparent);
+}
+@media (hover: hover) {
+  a.bg-brand:hover, button.bg-brand:not(:disabled):hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 14px 28px -14px rgba(23, 20, 18, 0.6);
+  }
+  a.bg-brand:hover::after, button.bg-brand:not(:disabled):hover::after {
+    transform: translateX(120%);
+    transition: transform 720ms var(--ease-premium);
+  }
+}
+a.bg-brand:active, button.bg-brand:not(:disabled):active {
+  transform: translateY(0) scale(0.975);
+  filter: brightness(0.96);
+}
+
+button:not(:disabled), a[class*="rounded-full"][class*="border"], a[class*="rounded-xl"][class*="border"] {
+  transition: transform 180ms var(--ease-premium), background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, color 180ms ease;
+}
+button:not(:disabled):active, a[class*="rounded-full"][class*="border"]:active, a[class*="rounded-xl"][class*="border"]:active {
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  button:not(:disabled):not(.bg-brand)[class*="border"]:hover,
+  a[class*="rounded-full"][class*="border"]:hover,
+  a[class*="rounded-xl"][class*="border"]:hover {
+    border-color: var(--brass);
+    box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--brass) 80%, transparent);
+  }
+}
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+}
+button:disabled { cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  a.bg-brand, button.bg-brand, button, a[class*="border"] { transition: none !important; }
+  a.bg-brand::after, button.bg-brand::after { display: none; }
+  a.bg-brand:hover, button.bg-brand:hover, a.bg-brand:active, button.bg-brand:active, button:active { transform: none !important; }
+}
