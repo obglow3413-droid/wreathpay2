@@ -371,11 +371,19 @@ a, button {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: logoShine 5s ease-in-out infinite;
+  display: inline-block;
+  font-weight: 400;
+  animation: logoShine 4s ease-in-out infinite, logoFlip 4s cubic-bezier(.45,.05,.25,1) infinite;
 }
 @keyframes logoShine {
-  0%, 55% { background-position: 120% 0; }
-  80%, 100% { background-position: -20% 0; }
+  0%, 62% { background-position: 120% 0; }
+  88%, 100% { background-position: -20% 0; }
+}
+/* PAY가 Y축으로 한 바퀴 회전하며 살짝 커지고 금빛 글로우가 번진다 */
+@keyframes logoFlip {
+  0%, 55% { transform: perspective(300px) rotateY(0deg) scale(1); filter: none; }
+  70% { transform: perspective(300px) rotateY(180deg) scale(1.18); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brass) 70%, transparent)); }
+  85%, 100% { transform: perspective(300px) rotateY(360deg) scale(1); filter: none; }
 }
 .logo-spark {
   position: absolute;
@@ -387,12 +395,12 @@ a, button {
   clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
   opacity: 0;
   transform: scale(0.2) rotate(0deg);
-  animation: logoSpark 5s ease-in-out infinite;
+  animation: logoSpark 4s ease-in-out infinite;
   -webkit-text-fill-color: initial;
 }
 @keyframes logoSpark {
-  0%, 74% { opacity: 0; transform: scale(0.2) rotate(0deg); }
-  82% { opacity: 1; transform: scale(1) rotate(45deg); }
+  0%, 80% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  87% { opacity: 1; transform: scale(1) rotate(45deg); }
   92%, 100% { opacity: 0; transform: scale(0.2) rotate(90deg); }
 }
 @media (prefers-reduced-motion: reduce) {
