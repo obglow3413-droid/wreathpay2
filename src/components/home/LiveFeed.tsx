@@ -3,6 +3,7 @@ import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { EVENT_TYPE_LABEL, QUANTITY_RANGE_LABEL, type EventType, type QuantityRange } from "@/lib/types";
 import CountUpNumber from "./CountUpNumber";
 import CountUpAmount from "./CountUpAmount";
+import { MANUAL_WEEK_STATS } from "@/lib/homeStats";
 import LiveTicker, { type TickerItem } from "./LiveTicker";
 
 interface FeedData {
@@ -130,7 +131,11 @@ async function getFeed(): Promise<FeedData> {
 }
 
 export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
-  const { items, todayCount, weekCount, returnedAmount, returnedCount } = demo ? getDemoFeed() : await getFeed();
+  const feed = demo ? getDemoFeed() : await getFeed();
+  const { items, todayCount, returnedCount } = feed;
+  const weekCount = demo ? feed.weekCount : Math.max(feed.weekCount, MANUAL_WEEK_STATS.weekCount);
+  const manualAmount = !demo && MANUAL_WEEK_STATS.returnedAmount > feed.returnedAmount;
+  const returnedAmount = demo ? feed.returnedAmount : Math.max(feed.returnedAmount, MANUAL_WEEK_STATS.returnedAmount);
 
   return (
     <section className="border-t border-line bg-ivory">
@@ -159,11 +164,12 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
             <div className="mt-6 grid grid-cols-2 gap-3">
               {returnedAmount > 0 && (
                 <div className="col-span-2 rounded-2xl border border-line bg-paper px-4 py-4">
-                  <p className="text-[12px] text-muted">지금까지 돌려드린 금액</p>
+                  <p className="text-[12px] text-muted">{manualAmount ? "최근 7일간 돌려드린 금액" : "지금까지 돌려드린 금액"}</p>
                   <p className="mt-1 text-[28px] font-extrabold leading-none">
+                    {manualAmount && <span className="mr-1 text-[15px] font-bold text-muted">약</span>}
                     <CountUpAmount amount={returnedAmount} />
                   </p>
-                  <p className="mt-1.5 text-[11.5px] text-muted-light">수거 완료 {returnedCount}건 기준</p>
+                  <p className="mt-1.5 text-[11.5px] text-muted-light">{manualAmount ? "최근 7일 기준" : `수거 완료 ${returnedCount}건 기준`}</p>
                 </div>
               )}
               {todayCount > 0 && (
