@@ -7,7 +7,7 @@ export default function SiteFooter() {
       <div className="mx-auto max-w-5xl px-5 py-10 text-[12.5px] leading-relaxed text-muted-light">
         <Logo size="sm" href={null} className="opacity-80" />
         <p className="mt-2">
-          상호명 (주)루우크컴퍼니 · 대표 이두형 · 사업자등록번호 230-99-03514
+          상호명 (주)루우크컴퍼니 · 대표 이두형 · 사업자등록번호 230-88-03514
           <br />
           사업장주소 경기도 고양시 덕양구 향동동 515-1
           <br />
