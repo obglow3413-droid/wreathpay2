@@ -40,7 +40,10 @@ export default function Logo({
       <LogoMark size={mark} />
       <span className={`${text} leading-none tracking-[0.14em]`}>
         <span className="font-extrabold">KKOT</span>
-        <span className="ml-[0.35em] font-light text-brass">PAY</span>
+        <span className="logo-pay relative ml-[0.35em] font-light text-brass">
+          PAY
+          <span className="logo-spark" aria-hidden="true" />
+        </span>
       </span>
     </span>
   );
