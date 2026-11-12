@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatKRW } from "@/lib/pricing";
 import MetricCard from "@/components/admin/MetricCard";
+import DashboardTrends from "@/components/admin/DashboardTrends";
 
 async function getDashboardMetrics() {
   if (!isSupabaseConfigured()) return null;
@@ -106,6 +107,8 @@ export default async function AdminDashboardPage() {
           hint="오늘 신청 기준"
         />
       </div>
+
+      <DashboardTrends />
     </div>
   );
 }

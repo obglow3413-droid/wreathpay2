@@ -36,7 +36,7 @@ export default async function EstimatePage({
         <EstimateWizard
           initialBulk={bulk === "1"}
           initialEventType={initialEventType}
-          initialPlace={place ? { name: place.name, address: cleanAddress(place.address) } : null}
+          initialPlace={place ? { name: place.name, address: cleanAddress(place.address), slug: place.slug } : null}
         />
       </main>
     </div>

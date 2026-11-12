@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { QUANTITY_POLICY } from "@/lib/pricing";
 import SettingsForm from "@/components/admin/SettingsForm";
+import HomeStatsForm from "@/components/admin/HomeStatsForm";
+import { getHomeStats } from "@/lib/homeStats";
 
 export default async function AdminSettingsPage() {
   const configured = isSupabaseConfigured();
@@ -50,6 +52,7 @@ export default async function AdminSettingsPage() {
       )}
 
       <SettingsForm initialPrices={prices} initialPolicy={policy} />
+      <HomeStatsForm initial={await getHomeStats()} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { auditLog } from "@/lib/adminAuth";
 
 export async function PATCH(request: Request) {
   try {
@@ -41,6 +42,17 @@ export async function PATCH(request: Request) {
         .from("system_settings")
         .update({ value: body.quantityPolicy, updated_at: new Date().toISOString() })
         .eq("key", "quantity_policy");
+    }
+
+    // 홈 실적 수동 표시값
+    if (body.homeStats) {
+      const n = (x: unknown) => (Number.isFinite(Number(x)) && Number(x) > 0 ? Math.round(Number(x)) : 0);
+      const value = { weekCount: n(body.homeStats.weekCount), returnedAmount: n(body.homeStats.returnedAmount) };
+      const { error } = await supabase
+        .from("system_settings")
+        .upsert({ key: "home_stats", value, updated_at: new Date().toISOString() }, { onConflict: "key" });
+      if (error) throw error;
+      await auditLog(user.id, "home_stats.update", null, value);
     }
 
     return NextResponse.json({ ok: true });

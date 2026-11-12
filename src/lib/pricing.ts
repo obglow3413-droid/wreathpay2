@@ -138,3 +138,43 @@ export function quantityMidpoint(range: string): number {
   if (!bounds) return 1;
   return bounds.max ? Math.round((bounds.min + bounds.max) / 2) : bounds.min;
 }
+
+
+/**
+ * 수량 기준 페이백 권장 범위(원). 공개 시세표(홈 '내 화환은 얼마일까요?')와 같은 기준.
+ * 사진 AI 견적이 없을 때 관리자가 승인할 금액의 출발점으로 쓴다. 50개 이상은 별도 견적(null).
+ */
+const PAYBACK_TABLE: { max: number; funeral: [number, number]; celebration: [number, number] }[] = [
+  { max: 4, funeral: [0, 0], celebration: [0, 0] },
+  { max: 9, funeral: [10000, 30000], celebration: [0, 20000] },
+  { max: 14, funeral: [40000, 70000], celebration: [20000, 40000] },
+  { max: 19, funeral: [60000, 100000], celebration: [30000, 60000] },
+  { max: 29, funeral: [90000, 150000], celebration: [50000, 100000] },
+  { max: 49, funeral: [150000, 250000], celebration: [90000, 160000] },
+];
+const RANGE_BOUNDS: Record<string, [number, number]> = { "1-4": [1, 4], "5-9": [5, 9], "10-29": [10, 29], "30-49": [30, 49] };
+
+export function suggestPayback(
+  eventType: string,
+  quantityRange: string,
+  exactCount?: number | null
+): { low: number; high: number; mid: number } | null {
+  const col = eventType === "funeral" ? "funeral" : "celebration";
+  const row = (n: number) => PAYBACK_TABLE.find((r) => n <= r.max);
+  let low: number;
+  let high: number;
+  if (exactCount && exactCount > 0) {
+    const r = row(exactCount);
+    if (!r) return null;
+    [low, high] = r[col];
+  } else {
+    const b = RANGE_BOUNDS[quantityRange];
+    if (!b) return null;
+    const lo = row(b[0]);
+    const hi = row(b[1]);
+    if (!lo || !hi) return null;
+    low = lo[col][0];
+    high = hi[col][1];
+  }
+  return { low, high, mid: Math.round((low + high) / 2 / 1000) * 1000 };
+}

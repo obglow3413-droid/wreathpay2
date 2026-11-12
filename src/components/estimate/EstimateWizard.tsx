@@ -88,7 +88,7 @@ export default function EstimateWizard({
 }: {
   initialBulk?: boolean;
   initialEventType?: EventType | null;
-  initialPlace?: { name: string; address: string } | null;
+  initialPlace?: { name: string; address: string; slug?: string } | null;
 }) {
   const router = useRouter();
 
@@ -312,6 +312,17 @@ export default function EstimateWizard({
       }
       formData.append("dispatchMode", dispatchMode);
       formData.append("ribbonWanted", ribbonWanted ? "1" : "0");
+      {
+        // 유입 경로: 장소 페이지에서 왔으면 그 장소, 아니면 친구 추천 코드(홈에서 저장해 둔 값)
+        let ref = initialPlace?.slug ? `place:${initialPlace.slug}` : "";
+        try {
+          if (!ref) {
+            const r = localStorage.getItem("kkotpay:ref");
+            if (r) ref = `ref:${r}`;
+          }
+        } catch {}
+        if (ref) formData.append("sourceRef", ref);
+      }
       formData.append("placeName", placeName);
       formData.append("address", address);
       formData.append("addressDetail", addressDetail);

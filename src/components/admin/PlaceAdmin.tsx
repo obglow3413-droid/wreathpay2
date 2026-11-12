@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import QRCode from "qrcode";
 
 interface Row {
   slug: string;
@@ -77,7 +78,32 @@ export default function PlaceAdmin({ places }: { places: Row[] }) {
                   {p.kind === "funeral" ? "장례식장" : "웨딩홀"} · {p.sigungu}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(`https://kkotpay.kr/places/${p.slug}`);
+                      setMsg(`${p.name} 전용 링크를 복사했어요.`);
+                    } catch {}
+                  }}
+                  className="rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-medium"
+                >
+                  링크 복사
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const url = await QRCode.toDataURL(`https://kkotpay.kr/places/${p.slug}`, { width: 720, margin: 2 });
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `kkotpay-qr-${p.name}.png`;
+                    a.click();
+                  }}
+                  className="rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-medium"
+                >
+                  QR 저장
+                </button>
                 <button type="button" disabled={busy} onClick={() => post({ slug: p.slug, isPartner: !p.isPartner })} className="rounded-lg border border-border px-3 py-1.5 text-[12.5px] font-medium disabled:opacity-40">
                   {p.isPartner ? "제휴 해제" : "제휴 표시"}
                 </button>

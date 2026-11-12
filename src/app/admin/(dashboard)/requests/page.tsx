@@ -12,6 +12,8 @@ import {
 import { formatKRW } from "@/lib/pricing";
 import RequestFilters from "@/components/admin/RequestFilters";
 import RequestQuickActions from "@/components/admin/RequestQuickActions";
+import AutoEstimateButton from "@/components/admin/AutoEstimateButton";
+import { suggestPayback } from "@/lib/pricing";
 import DeleteRequestButton from "@/components/admin/DeleteRequestButton";
 
 interface SearchParams {
@@ -70,7 +72,9 @@ export default async function AdminRequestsPage({
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-[20px] font-bold">신청목록</h1>
-        <span className="text-[13px] text-muted">총 {rows.length}건 </span>
+        <span className="flex items-center gap-3 text-[13px] text-muted">
+          <AutoEstimateButton />총 {rows.length}건
+        </span>
       </div>
 
       <div className="mt-4">
@@ -127,9 +131,11 @@ export default async function AdminRequestsPage({
                 </td>
                 <td className="px-4 py-3">
                   <RequestQuickActions
+                    key={`${r.id}-${r.status}-${r.customer_payback_amount}`}
                     requestId={r.id}
                     status={r.status as RequestStatus}
-                    customerPaybackAmount={r.customer_payback_amount}
+                    customerPaybackAmount={Number(r.customer_payback_amount) || 0}
+                    suggestion={suggestPayback(r.event_type, r.quantity_range)}
                   />
                 </td>
                 <td className="px-4 py-3">

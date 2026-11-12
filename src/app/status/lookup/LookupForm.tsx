@@ -27,6 +27,9 @@ interface Item {
   createdAt: string;
   ribbonWanted: boolean;
   reviewed: boolean;
+  proof: { actualQuantity: number | null; photo: string | null; collectedAt: string | null } | null;
+  refCode: string | null;
+  updatedAt: string;
   ribbon: { count: number | null; photos: string[]; listStatus: string; list: { sender: string; text: string; uncertain?: boolean }[] } | null;
 }
 
@@ -250,6 +253,8 @@ export default function LookupForm() {
 
                 <ManageSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
 
+                {(item.status === "collected" || item.status === "settled") && <ProofSection item={item} />}
+
                 {(item.status === "collected" || item.status === "settled") && <ReviewBox item={item} phone={lookedPhone} />}
 
                 <RibbonSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
@@ -269,6 +274,8 @@ export default function LookupForm() {
           })}
         </div>
       )}
+
+      {items && items.find((i) => i.refCode) && <ReferralBox code={items.find((i) => i.refCode)!.refCode!} />}
 
       {boards.length > 0 && (
         <div className="mt-6 space-y-3">
@@ -560,6 +567,75 @@ function ReviewBox({ item, phone }: { item: Item; phone: string }) {
         {busy ? "등록 중…" : "후기 남기기"}
       </button>
       <p className="mt-2 text-[11.5px] text-muted-light">승인 후 지역·행사 종류와 함께 표시되며, 이름과 연락처는 공개되지 않아요.</p>
+    </div>
+  );
+}
+
+/** 수거 완료 증빙(실제 수량·현장 사진) + 정산 완료 시 정산 내역 */
+function ProofSection({ item }: { item: Item }) {
+  const settled = item.status === "settled";
+  const d = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-");
+  const rows: [string, string][] = [
+    ["행사 종류", EVENT_TYPE_LABEL[item.eventType]],
+    ["실제 수거 수량", item.proof?.actualQuantity != null ? `${item.proof.actualQuantity}개` : QUANTITY_RANGE_LABEL[item.quantityRange]],
+    ["수거일", d(item.proof?.collectedAt ?? item.updatedAt)],
+  ];
+  if (settled) {
+    rows.push(["정산 금액", `${item.paybackAmount.toLocaleString("ko-KR")}원`]);
+    rows.push(["입금 계좌", item.account ? `${item.account.bankName} ****${item.account.last4}` : "-"]);
+    rows.push(["정산일", d(item.updatedAt)]);
+  }
+  return (
+    <div className="statement mt-4 rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[14px] font-bold">{settled ? "정산 내역서" : "수거 완료 확인"}</p>
+        {settled && (
+          <button type="button" onClick={() => window.print()} className="no-print rounded-lg border border-border px-2.5 py-1 text-[12px] font-medium text-muted">
+            저장·인쇄
+          </button>
+        )}
+      </div>
+      <dl className="mt-3 space-y-1.5 text-[13px]">
+        {rows.map(([k, v]) => (
+          <div key={k} className="flex justify-between gap-4">
+            <dt className="text-muted">{k}</dt>
+            <dd className="font-medium tabular-nums">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      {item.proof?.photo && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={item.proof.photo} alt="수거 완료 현장 사진" className="no-print mt-3 max-h-64 w-full rounded-lg object-cover" />
+      )}
+      {settled && <p className="mt-3 text-[11px] text-muted-light">발행: KKOT PAY ((주)루우크컴퍼니 · 사업자등록번호 230-88-03514)</p>}
+    </div>
+  );
+}
+
+/** 친구 추천 링크: 이 링크로 들어온 신청이 추천으로 집계된다 */
+function ReferralBox({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const url = `https://kkotpay.kr/?r=${code}`;
+  return (
+    <div className="mt-4 rounded-xl border border-border bg-white p-4">
+      <p className="text-[14px] font-bold">주변에 화환 받을 분이 있나요?</p>
+      <p className="mt-1 text-[12.5px] text-muted">내 추천 링크를 보내주세요. 이 링크로 신청하면 추천으로 기록돼요.</p>
+      <div className="mt-3 flex gap-2">
+        <input readOnly value={url} className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface px-3 text-[12.5px]" onFocus={(e) => e.currentTarget.select()} />
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(url);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 1500);
+            } catch {}
+          }}
+          className="h-10 shrink-0 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white"
+        >
+          {copied ? "복사됨" : "링크 복사"}
+        </button>
+      </div>
     </div>
   );
 }

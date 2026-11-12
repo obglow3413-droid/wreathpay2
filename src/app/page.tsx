@@ -6,6 +6,7 @@ import LinkShareSection from "@/components/home/LinkShareSection";
 import LiveFeed from "@/components/home/LiveFeed";
 import SimpleSteps from "@/components/home/SimpleSteps";
 import TrustSection from "@/components/home/TrustSection";
+import RefCapture from "@/components/home/RefCapture";
 import BulkSection from "@/components/home/BulkSection";
 import FloatingPaybackCta from "@/components/home/FloatingPaybackCta";
 import { ServiceTabProvider } from "@/components/home/ServiceTabContext";
@@ -49,6 +50,7 @@ export default async function HomePage({
           <BulkSection />
         </Reveal>
       </main>
+      <RefCapture />
       <div className="bg-white pb-24">
         <SiteFooter />
       </div>

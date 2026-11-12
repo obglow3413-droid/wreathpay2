@@ -533,3 +533,12 @@ input::placeholder, textarea::placeholder { color: var(--muted-light); }
 @media (prefers-reduced-motion: reduce) {
   .amount-reveal, .amount-reveal::after { animation: none !important; }
 }
+
+
+/* 정산 내역서 인쇄: 내역서만 남기고 나머지는 숨긴다 */
+@media print {
+  body * { visibility: hidden !important; }
+  .statement, .statement * { visibility: visible !important; }
+  .statement { position: absolute; inset: 24px auto auto 24px; width: calc(100% - 48px); border: 1px solid #999 !important; }
+  .no-print { display: none !important; }
+}

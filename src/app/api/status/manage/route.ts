@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { phoneGate } from "@/lib/phoneVerify";
+import { phoneGate, sensitiveGate } from "@/lib/phoneVerify";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { clientIp, rateLimited } from "@/lib/rateLimit";
@@ -30,6 +30,8 @@ export async function POST(req: Request) {
   {
     const gate = await phoneGate(req, phone, "manage", 10);
     if (gate) return gate;
+    const dev = sensitiveGate(req, phone);
+    if (dev) return dev;
   }
 
   try {

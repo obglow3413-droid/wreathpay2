@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { phoneGate } from "@/lib/phoneVerify";
+import { phoneGate, sensitiveGate } from "@/lib/phoneVerify";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { BANKS, encryptAccount, isAccountStorageConfigured } from "@/lib/payoutAccount";
@@ -38,6 +38,8 @@ export async function POST(req: Request) {
   {
     const gate = await phoneGate(req, phone, "account", 6);
     if (gate) return gate;
+    const dev = sensitiveGate(req, phone);
+    if (dev) return dev;
   }
   if (!(BANKS as readonly string[]).includes(bankName)) return NextResponse.json({ error: "은행을 선택해주세요." }, { status: 400 });
   if (holderName.length < 2 || holderName.length > 20) return NextResponse.json({ error: "예금주 이름을 확인해주세요." }, { status: 400 });

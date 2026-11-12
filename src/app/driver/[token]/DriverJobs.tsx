@@ -28,6 +28,7 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
   const [error, setError] = useState<string | null>(null);
   const [ribbonCount, setRibbonCount] = useState<Record<string, string>>({});
   const [ribbonFiles, setRibbonFiles] = useState<Record<string, File[]>>({});
+  const [proof, setProof] = useState<Record<string, File>>({});
 
   async function pickRibbon(id: string, list: FileList | null) {
     if (!list) return;
@@ -57,6 +58,19 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
             setBusy(null);
             return;
           }
+        }
+      }
+      // 수거 완료 현장 사진(선택): 고객 조회 화면에 표시된다
+      if (action === "complete" && proof[job.id]) {
+        const fd = new FormData();
+        fd.append("token", token);
+        fd.append("requestId", job.id);
+        fd.append("file", proof[job.id]);
+        const pr = await fetch("/api/driver/proof", { method: "POST", body: fd });
+        if (!pr.ok) {
+          setError((await pr.json().catch(() => ({}))).error ?? "완료 사진을 저장하지 못했어요.");
+          setBusy(null);
+          return;
         }
       }
       const res = await fetch("/api/driver/action", {
@@ -158,6 +172,24 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
                   </div>
                 </div>
               )}
+
+              <label className="mt-3 flex h-11 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-[13px] font-medium">
+                📸 수거 완료 사진 {proof[j.id] ? "(1장 선택됨)" : "찍기 (선택)"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) {
+                      const c = await compressImage(f);
+                      setProof((p) => ({ ...p, [j.id]: c }));
+                    }
+                  }}
+                />
+              </label>
 
               <div className="mt-3 flex gap-2">
                 <input

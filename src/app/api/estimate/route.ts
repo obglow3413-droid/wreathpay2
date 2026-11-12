@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
+import { deviceCookie } from "@/lib/phoneVerify";
 import { clientIp, rateLimitedShared } from "@/lib/rateLimit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { generateRequestNo } from "@/lib/pricing";
@@ -42,6 +44,9 @@ export async function POST(request: Request) {
     const customerCount = Number.isFinite(countRaw) && countRaw >= 1 && countRaw <= 500 ? countRaw : null;
     const dispatchMode = formData.get("dispatchMode") === "fast" ? "fast" : "date";
     const ribbonWanted = formData.get("ribbonWanted") === "1";
+    // 유입 경로: 장소 페이지(place:<slug>) 또는 친구 추천(ref:<코드>)
+    const rawRef = String(formData.get("sourceRef") ?? "").trim().toLowerCase();
+    const sourceRef = /^(place|ref):[a-z0-9-]{2,40}$/.test(rawRef) ? rawRef : null;
     const images = formData.getAll("images").filter((f): f is File => f instanceof File);
 
     if (
@@ -106,6 +111,8 @@ export async function POST(request: Request) {
           pickup_date: pickupDate,
           pickup_time_slot: pickupTimeSlot,
           ribbon_wanted: ribbonWanted,
+          source_ref: sourceRef,
+          ref_code: randomBytes(5).toString("hex").slice(0, 7),
           customer_note: dispatchMode === "fast" ? "빠른 배정 요청(가장 빠른 일정으로 안내 희망)" : null,
           ...(hasCoords ? { address_lat: latRaw, address_lng: lngRaw } : {}),
           agreed_disposal_authority: true,
@@ -212,7 +219,11 @@ export async function POST(request: Request) {
 
     await notifyAdmin(`[KKOT PAY] 새 접수가 들어왔어요. (${estimateRequest.request_no} · ${placeName} · ${pickupDate})`);
 
-    return NextResponse.json({ requestNo: estimateRequest.request_no });
+    const res = NextResponse.json({ requestNo: estimateRequest.request_no });
+    // 이 브라우저를 "이 번호로 신청한 기기"로 표시(계좌 등록·취소 보호용)
+    const dc = deviceCookie(request, customerPhone.replace(/\D/g, ""));
+    if (dc) res.headers.append("Set-Cookie", dc);
+    return res;
   } catch (err) {
     console.error("[POST /api/estimate]", err);
     return NextResponse.json(

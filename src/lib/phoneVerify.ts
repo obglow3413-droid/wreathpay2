@@ -38,6 +38,54 @@ export function safeEqual(a: string, b: string) {
   return safeEq(a, b);
 }
 
+/**
+ * 신청 기기 표식: 접수를 마친 브라우저에 90일짜리 서명 쿠키를 남긴다.
+ * 문자 인증이 꺼져 있어도, 계좌 등록·일정 변경·취소 같은 민감한 동작은
+ * "그 번호로 신청했던 기기"(또는 문자 인증을 마친 기기)에서만 허용한다.
+ */
+const DEVICE_COOKIE = "kp_d";
+const DEVICE_MS = 90 * 24 * 3600_000;
+
+function readCookie(req: Request, name: string): string | null {
+  const raw = (req.headers.get("cookie") ?? "")
+    .split(";")
+    .map((c) => c.trim())
+    .find((c) => c.startsWith(`${name}=`));
+  return raw ? raw.slice(name.length + 1) : null;
+}
+
+/** 이 기기에서 신청한 번호 목록(최근 5개)을 서명해 쿠키로 만든다 */
+export function deviceCookie(req: Request, phone: string): string | null {
+  if (!secret()) return null;
+  const phones = [phone, ...trustedPhones(req).filter((p) => p !== phone)].slice(0, 5);
+  const exp = Date.now() + DEVICE_MS;
+  const payload = `${phones.join("-")}.${exp}`;
+  return `${DEVICE_COOKIE}=${payload}.${sign("d:" + payload)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${DEVICE_MS / 1000}`;
+}
+
+function trustedPhones(req: Request): string[] {
+  const v = readCookie(req, DEVICE_COOKIE);
+  if (!v || !secret()) return [];
+  const [list, exp, sig] = v.split(".");
+  if (!list || !exp || !sig || Number(exp) < Date.now() || !safeEq(sig, sign(`d:${list}.${exp}`))) return [];
+  return list.split("-").filter((p) => /^\d{9,11}$/.test(p));
+}
+
+/** 민감 동작 허용 여부: 문자 인증을 마쳤거나, 이 번호로 신청했던 기기 */
+export function isTrustedForPhone(req: Request, phone: string): boolean {
+  if (!secret()) return true; // 서명 키가 없는 환경(로컬)에서는 막지 않는다
+  return isPhoneVerified(req, phone) || trustedPhones(req).includes(phone);
+}
+
+/** 민감 동작(계좌 등록·일정 변경·취소) 관문. 통과하면 null */
+export function sensitiveGate(req: Request, phone: string): NextResponse | null {
+  if (isTrustedForPhone(req, phone)) return null;
+  return NextResponse.json(
+    { error: "보안을 위해 신청하신 기기(브라우저)에서만 할 수 있어요. 다른 기기라면 채널톡으로 본인 확인 후 도와드릴게요.", deviceRequired: true },
+    { status: 403 }
+  );
+}
+
 /** 인증 완료 쿠키 헤더 값 */
 export function verifiedCookie(phone: string): string {
   const exp = Date.now() + SESSION_MS;

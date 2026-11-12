@@ -27,6 +27,13 @@ export const metadata: Metadata = {
     description: "사진 한 장으로 화환 예상 견적을 확인하고, 방문수거 후 현금으로 돌려받으세요.",
     locale: "ko_KR",
     type: "website",
+    siteName: "KKOT PAY",
+    url: "https://kkotpay.kr",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KKOT PAY - 받은 화환, 현금으로 돌려받으세요",
+    description: "사진 한 장으로 신청 · 방문수거 · 수거비 0원",
   },
 };
 
