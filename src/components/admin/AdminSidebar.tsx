@@ -2,6 +2,7 @@
 
 import Logo from "@/components/layout/Logo";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -21,6 +22,27 @@ const NAV_ITEMS = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [received, setReceived] = useState(0);
+
+  // 새 접수 배지(30초마다 확인) + 브라우저 탭 제목에도 표시
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch("/api/admin/pending-count")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j) => alive && j && setReceived(j.received ?? 0))
+        .catch(() => {});
+    load();
+    const t = setInterval(load, 30000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, []);
+  useEffect(() => {
+    const base = document.title.replace(/^\(\d+\) /, "");
+    document.title = received > 0 ? `(${received}) ${base}` : base;
+  }, [received]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -48,6 +70,9 @@ export default function AdminSidebar() {
               }`}
             >
               {item.label}
+              {item.href === "/admin/requests" && received > 0 && (
+                <span className="ml-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold text-white">{received}</span>
+              )}
             </Link>
           );
         })}

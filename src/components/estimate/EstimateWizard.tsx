@@ -508,6 +508,11 @@ export default function EstimateWizard({
                   🔍 주소 검색
                 </button>
               </div>
+              {address.trim().length > 4 && !address.includes("서울") && (
+                <p className="mt-1.5 rounded-lg bg-surface px-3 py-2 text-[12px] leading-relaxed text-muted">
+                  서울 외 지역은 담당자가 수거 가능 여부와 일정을 확인해 안내해 드려요.
+                </p>
+              )}
               {locateMsg && <p className="mt-1.5 text-[12px] leading-relaxed text-muted">{locateMsg}</p>}
             </div>
 

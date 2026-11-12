@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { generateRequestNo } from "@/lib/pricing";
+import { notifyAdmin } from "@/lib/notify";
 import { filesToAiImages, isAiEstimateConfigured, runAiEstimate } from "@/lib/aiEstimate";
 import type { EventType, QuantityRange } from "@/lib/types";
 
@@ -200,6 +201,8 @@ export async function POST(request: Request) {
         console.error("[estimate ai]", e);
       }
     }
+
+    await notifyAdmin(`[KKOT PAY] 새 접수가 들어왔어요. (${estimateRequest.request_no} · ${placeName} · ${pickupDate})`);
 
     return NextResponse.json({ requestNo: estimateRequest.request_no });
   } catch (err) {

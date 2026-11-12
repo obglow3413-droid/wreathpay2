@@ -68,3 +68,14 @@ export async function notifyStatusChange(requestId: string, status: string): Pro
     console.error("[notify]", e);
   }
 }
+
+/** 관리자에게 문자 알림(Solapi 설정 + ADMIN_NOTIFY_PHONE 이 있을 때만). 없으면 조용히 건너뛴다. */
+export async function notifyAdmin(text: string): Promise<void> {
+  try {
+    const to = process.env.ADMIN_NOTIFY_PHONE;
+    if (!to || !isSmsConfigured()) return;
+    await sendSms(to, text);
+  } catch (e) {
+    console.error("[notifyAdmin]", e);
+  }
+}

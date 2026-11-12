@@ -184,6 +184,8 @@ export default function LookupForm() {
                   )
                 )}
 
+                <ManageSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
+
                 <RibbonSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
 
                 {active && (
@@ -268,6 +270,7 @@ function csvEscape(v: string) {
 function RibbonSection({ item, phone, onChanged }: { item: Item; phone: string; onChanged: () => void }) {
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [thanksCopied, setThanksCopied] = useState(false);
   const beforeCollect = !["collected", "settled", "cancelled"].includes(item.status);
 
   async function toggle(enable: boolean) {
@@ -321,6 +324,14 @@ function RibbonSection({ item, phone, onChanged }: { item: Item; phone: string; 
       setTimeout(() => setCopied(false), 1800);
     });
   }
+  function thanks() {
+    const names = Array.from(new Set(list.map((r) => r.sender).filter(Boolean)));
+    const text = names.map((n) => `${n}님, 바쁘신 중에도 마음을 전해 주셔서 진심으로 감사드립니다. 덕분에 큰 힘이 되었습니다.`).join("\n\n");
+    navigator.clipboard.writeText(text).then(() => {
+      setThanksCopied(true);
+      setTimeout(() => setThanksCopied(false), 1800);
+    });
+  }
   function csv() {
     const body = ["번호,보낸 분,문구", ...list.map((r, i) => [i + 1, csvEscape(r.sender), csvEscape(r.text)].join(","))].join("\r\n");
     const blob = new Blob(["\uFEFF" + body], { type: "text/csv;charset=utf-8" });
@@ -357,6 +368,9 @@ function RibbonSection({ item, phone, onChanged }: { item: Item; phone: string; 
           엑셀(CSV) 받기
         </button>
       </div>
+      <button type="button" onClick={thanks} className="mt-2 h-10 w-full rounded-lg border border-border text-[13px] font-medium">
+        {thanksCopied ? "감사 문구 복사됨 ✓" : "💌 감사 인사 문구 복사"}
+      </button>
       {item.ribbon && item.ribbon.photos.length > 0 && (
         <div className="mt-3 grid grid-cols-4 gap-1.5">
           {item.ribbon.photos.map((src, i) => (
@@ -368,6 +382,65 @@ function RibbonSection({ item, phone, onChanged }: { item: Item; phone: string; 
         </div>
       )}
       <p className="mt-2 text-[11px] text-muted-light">리본 사진과 명단은 수거 후 30일간 보관돼요.</p>
+    </div>
+  );
+}
+
+const EDITABLE = ["received", "estimating", "estimated", "customer_approved", "dispatch_pending"];
+
+/** 기사 배정 전까지 고객이 직접 일정 변경·취소 */
+function ManageSection({ item, phone, onChanged }: { item: Item; phone: string; onChanged: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState(item.pickupDate);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [today] = useState(() => new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10));
+  if (!EDITABLE.includes(item.status)) return null;
+
+  async function call(action: "cancel" | "reschedule") {
+    if (action === "cancel" && !window.confirm("신청을 취소할까요?")) return;
+    setBusy(true);
+    setError(null);
+    const res = await fetch("/api/status/manage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestNo: item.requestNo, phone, action, pickupDate: date }),
+    });
+    const json = await res.json().catch(() => ({}));
+    setBusy(false);
+    if (!res.ok) setError(json.error ?? "처리하지 못했어요.");
+    else {
+      setOpen(false);
+      onChanged();
+    }
+  }
+
+  return (
+    <div className="mt-4">
+      {!open ? (
+        <div className="flex items-center gap-3 text-[12.5px]">
+          <button type="button" onClick={() => setOpen(true)} className="font-medium text-brand-dark underline">
+            수거 일정 변경
+          </button>
+          <span className="text-muted-light">·</span>
+          <button type="button" onClick={() => call("cancel")} disabled={busy} className="font-medium text-muted underline">
+            신청 취소
+          </button>
+        </div>
+      ) : (
+        <div className="rounded-lg border border-border px-4 py-3">
+          <p className="text-[13px] font-bold">수거 희망일 변경</p>
+          <input type="date" value={date} min={today} onChange={(e) => setDate(e.target.value)} className="mt-2 h-11 w-full rounded-lg border border-border px-3 text-[14px]" />
+          {error && <p className="mt-1.5 text-[12px] text-red-600">{error}</p>}
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setOpen(false)} className="h-10 rounded-lg border border-border text-[13px]">닫기</button>
+            <button type="button" onClick={() => call("reschedule")} disabled={busy} className="h-10 rounded-lg bg-brand text-[13px] font-semibold text-white disabled:opacity-50">
+              {busy ? "저장 중..." : "변경 저장"}
+            </button>
+          </div>
+        </div>
+      )}
+      {!open && error && <p className="mt-1.5 text-[12px] text-red-600">{error}</p>}
     </div>
   );
 }
