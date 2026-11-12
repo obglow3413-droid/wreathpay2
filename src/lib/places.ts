@@ -49,6 +49,11 @@ export async function getAllPlaces(includeHidden = false): Promise<Place[]> {
       console.error("[places]", e);
     }
   }
+  // 공공데이터의 시군구 표기가 제각각(수원시 / 수원시팔달구)이라 경기도는 시 단위로 맞춘다
+  for (const p of map.values()) {
+    const m = p.sido === "경기도" ? p.sigungu.replace(/\s+/g, "").match(/^(.+?시)(.+구)?$/) : null;
+    if (m) p.sigungu = m[1];
+  }
   const list = [...map.values()].filter((p) => includeHidden || !p.isHidden);
   list.sort((a, b) => Number(b.isPartner) - Number(a.isPartner) || (a.sido === "서울특별시" ? 0 : 1) - (b.sido === "서울특별시" ? 0 : 1) || a.sigungu.localeCompare(b.sigungu, "ko") || a.name.localeCompare(b.name, "ko"));
   return list;

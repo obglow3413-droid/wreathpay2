@@ -45,7 +45,7 @@ export default function SimpleSteps() {
           className="hover-lift mt-4 flex items-center justify-between rounded-2xl border border-line bg-paper px-5 py-4"
         >
           <span>
-            <span className="block text-[15px] font-bold">📍 장례식장으로 찾기</span>
+            <span className="block text-[15px] font-bold">📍 장례식장·웨딩홀로 찾기</span>
             <span className="mt-0.5 block text-[12.5px] text-muted">서울·경기 장소를 고르면 주소가 자동으로 채워져요</span>
           </span>
           <ChevronRight size={18} className="text-muted" />
