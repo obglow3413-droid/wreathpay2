@@ -3,7 +3,6 @@ import Link from "next/link";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import StatusTimeline from "@/components/status/StatusTimeline";
 import CompleteNotify from "@/components/status/CompleteNotify";
-import CopyButton from "@/components/status/CopyButton";
 import { EVENT_TYPE_LABEL, QUANTITY_RANGE_LABEL, type EventType, type QuantityRange } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -53,11 +52,6 @@ export default async function EstimateCompletePage({
 
       <div className="mt-8 rounded-xl border border-border bg-surface px-5 py-5">
         <SummaryRow
-          label="신청번호"
-          value={requestNo}
-          action={requestNo !== "-" ? <CopyButton text={requestNo} label="복사" /> : undefined}
-        />
-        <SummaryRow
           label="행사종류"
           value={summary ? EVENT_TYPE_LABEL[summary.event_type as EventType] : "-"}
         />
@@ -73,13 +67,13 @@ export default async function EstimateCompletePage({
         <StatusTimeline status="received" />
       </div>
       <p className="mt-4 text-center text-[12.5px] leading-relaxed text-muted-light">
-        접수번호와 연락처로 언제든 진행상황을 조회할 수 있어요.
+        신청하신 휴대폰번호로 언제든 진행상황을 조회할 수 있어요. 기사님 이동 중 알림도 받아보세요.
       </p>
 
       <div className="mt-8 space-y-2.5">
         {requestNo !== "-" && <CompleteNotify requestNo={requestNo} />}
         <Link
-          href={requestNo !== "-" ? `/status/lookup?req=${encodeURIComponent(requestNo)}` : "/status/lookup"}
+          href="/status/lookup"
           className="hover-lift flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-brand py-3.5 text-[15px] font-semibold text-white"
         >
           진행상황 조회하기

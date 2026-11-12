@@ -57,9 +57,9 @@ export default function AccountForm({
             <p className="text-[14px] font-semibold">
               {registered.bankName} ····{registered.last4}
             </p>
-            <button type="button" onClick={() => setOpen(true)} className="text-[12.5px] font-medium text-brand-dark underline">
-              변경
-            </button>
+            <a href="https://d5dpz.channel.io" target="_blank" rel="noopener noreferrer" className="text-[12px] font-medium text-muted underline">
+              변경은 채널톡
+            </a>
           </div>
         ) : (
           <button

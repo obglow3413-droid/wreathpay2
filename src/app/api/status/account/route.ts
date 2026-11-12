@@ -15,7 +15,7 @@ function limited(ip: string) {
 }
 const digits = (v: string) => v.replace(/\D/g, "");
 
-/** 페이백 받을 계좌 등록(재등록 시 덮어쓰기). 접수번호 + 연락처가 일치해야 하며, 정산 완료 전까지만 변경 가능. */
+/** 페이백 받을 계좌 등록(최초 1회, 변경은 채널톡 경유). 접수번호 + 연락처가 일치해야 하며, 정산 완료 전까지만 변경 가능. */
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (limited(ip)) return NextResponse.json({ error: "잠시 후 다시 시도해주세요." }, { status: 429 });
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     const supabase = await createServiceRoleClient();
     const { data } = await supabase
       .from("estimate_requests")
-      .select("id, status, customers(phone)")
+      .select("id, status, customers(phone), payout_accounts(id)")
       .ilike("request_no", requestNo)
       .maybeSingle();
     const customer = data && (Array.isArray(data.customers) ? data.customers[0] : data.customers);
@@ -54,6 +54,12 @@ export async function POST(req: Request) {
     }
     if (data.status === "settled" || data.status === "cancelled") {
       return NextResponse.json({ error: "이미 종료된 접수 건이라 계좌를 변경할 수 없어요." }, { status: 409 });
+    }
+
+    // 연락처만으로 조회되는 구조라, 이미 등록된 계좌를 바꾸는 건 본인 확인이 가능한 채널톡/담당자 경유로만 허용
+    const existing = Array.isArray(data.payout_accounts) ? data.payout_accounts[0] : data.payout_accounts;
+    if (existing) {
+      return NextResponse.json({ error: "이미 등록된 계좌예요. 변경은 채널톡으로 문의해 주세요." }, { status: 409 });
     }
 
     const { error } = await supabase.from("payout_accounts").upsert(

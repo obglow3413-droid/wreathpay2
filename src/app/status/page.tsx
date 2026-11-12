@@ -111,7 +111,7 @@ export default async function StatusPage() {
         ctaHref="/signup"
         ctaLabel="가입 / 로그인 하러 가기"
         secondaryHref="/status/lookup"
-        secondaryLabel="가입 없이 접수번호로 조회"
+        secondaryLabel="가입 없이 휴대폰번호로 조회"
       />
     );
   }

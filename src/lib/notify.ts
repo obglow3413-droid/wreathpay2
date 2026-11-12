@@ -12,18 +12,19 @@ export function isSmsConfigured(): boolean {
 const SITE = "https://kkotpay.kr";
 
 function message(status: string, requestNo: string, pickupDate: string | null): string | null {
-  const link = `${SITE}/status/lookup?req=${encodeURIComponent(requestNo)}`;
+  void requestNo;
+  const link = `${SITE}/status/lookup`;
   switch (status) {
     case "estimated":
-      return `[KKOT PAY] 예상 페이백이 산정됐어요. 접수번호 ${requestNo}\n진행상황: ${link}`;
+      return `[KKOT PAY] 예상 페이백이 산정됐어요.\n진행상황: ${link}`;
     case "dispatched":
-      return `[KKOT PAY] 꽃페이 전담기사님이 배정됐어요${pickupDate ? ` (수거일 ${pickupDate})` : ""}. 접수번호 ${requestNo}\n${link}`;
+      return `[KKOT PAY] 꽃페이 전담기사님이 배정됐어요${pickupDate ? ` (수거일 ${pickupDate})` : ""}.\n${link}`;
     case "collecting":
-      return `[KKOT PAY] 꽃페이 전담기사님이 지정하신 날짜에 이동 중입니다. 접수번호 ${requestNo}\n실시간 진행상황: ${link}`;
+      return `[KKOT PAY] 꽃페이 전담기사님이 지정하신 날짜에 이동 중입니다.\n실시간 진행상황: ${link}`;
     case "collected":
-      return `[KKOT PAY] 화환 수거가 완료됐어요. 곧 정산해 드릴게요. 접수번호 ${requestNo}\n${link}`;
+      return `[KKOT PAY] 화환 수거가 완료됐어요. 곧 정산해 드릴게요.\n${link}`;
     case "settled":
-      return `[KKOT PAY] 페이백 정산이 완료됐어요. 이용해 주셔서 감사합니다. 접수번호 ${requestNo}`;
+      return `[KKOT PAY] 페이백 정산이 완료됐어요. 이용해 주셔서 감사합니다.`;
     default:
       return null;
   }
