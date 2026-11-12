@@ -185,7 +185,12 @@ export default function LookupForm() {
           {items.map((item) => {
             const active = item.status !== "settled" && item.status !== "cancelled";
             return (
-              <div key={item.requestNo} className="fade-up rounded-xl border border-border bg-white p-5">
+              <div
+                key={item.requestNo}
+                className={`fade-up rounded-xl border border-l-4 border-border bg-white p-5 ${
+                  item.status === "cancelled" ? "border-l-sage opacity-80" : item.status === "settled" ? "border-l-forest" : "border-l-brass"
+                }`}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[14px] font-bold text-brand-dark">
                     {EVENT_TYPE_LABEL[item.eventType]} · {QUANTITY_RANGE_LABEL[item.quantityRange]}

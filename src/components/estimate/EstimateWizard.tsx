@@ -79,6 +79,8 @@ type DataStepName =
   | "contact";
 type StepName = DataStepName | "estimate";
 
+const STEP_LABEL: Record<string, string> = { photo: "사진", eventType: "종류", quantity: "수량", place: "장소", contact: "연락처" };
+
 export default function EstimateWizard({
   initialBulk = false,
   initialEventType = null,
@@ -340,7 +342,7 @@ export default function EstimateWizard({
         strategy="afterInteractive"
         onLoad={() => setAddressScriptLoaded(true)}
       />
-      {currentStep !== "estimate" && <StepProgress current={dataStepNumber} total={dataSteps.length} />}
+      {currentStep !== "estimate" && <StepProgress current={dataStepNumber} total={dataSteps.length} labels={dataSteps.map((s) => STEP_LABEL[s])} />}
 
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] text-red-600">
@@ -787,7 +789,7 @@ function EstimateResult({
                 <p className="text-[12px] text-muted">
                   {effectiveCount !== null ? `화환 ${count !== null ? "" : "약 "}${effectiveCount}개 · 예상 페이백` : "예상 페이백"}
                 </p>
-                <p className="text-[22px] font-extrabold leading-tight tabular-nums">
+                <p key={`${low}-${high}`} className="amount-reveal text-[22px] font-extrabold leading-tight tabular-nums">
                   {formatKRW(low)} ~ {formatKRW(high)}
                 </p>
               </>
