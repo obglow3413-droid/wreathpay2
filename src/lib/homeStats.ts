@@ -15,7 +15,7 @@ export const MANUAL_WEEK_STATS = {
  * DB 실시간 연동 후에는 enabled를 false로 바꾸고 MANUAL_WEEK_STATS.returnedAmount를 0으로 둔다.
  */
 export const SIMULATED_RETURNED = {
-  enabled: true,
+  enabled: false,
   baseAmount: 13_278_000,
   baseTime: "2026-11-12T02:30:00Z",
   perHour: 400_000,
