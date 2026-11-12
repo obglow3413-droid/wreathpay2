@@ -134,8 +134,9 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
   const feed = demo ? getDemoFeed() : await getFeed();
   const { items, todayCount, returnedCount } = feed;
   const weekCount = demo ? feed.weekCount : Math.max(feed.weekCount, MANUAL_WEEK_STATS.weekCount);
-  const manualAmount = !demo && MANUAL_WEEK_STATS.returnedAmount > feed.returnedAmount;
-  const returnedAmount = demo ? feed.returnedAmount : Math.max(feed.returnedAmount, MANUAL_WEEK_STATS.returnedAmount);
+  // 운영자가 확인한 최근 7일 실적이 설정돼 있으면 DB 누적값 대신 그 값을 그대로 표시
+  const manualAmount = !demo && MANUAL_WEEK_STATS.returnedAmount > 0;
+  const returnedAmount = manualAmount ? MANUAL_WEEK_STATS.returnedAmount : feed.returnedAmount;
 
   return (
     <section className="border-t border-line bg-ivory">
