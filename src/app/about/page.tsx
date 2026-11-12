@@ -394,7 +394,7 @@ export default function AboutPage() {
               신청자가 확인할 수 있는 정보
             </h2>
             <p className="mt-3 text-[14px] leading-[1.75] tracking-[-0.005em] text-muted md:text-[15.5px]">
-              KKOT PAY에 화환 회수를 맡긴 신청자는 접수번호를 통해 처리 진행 상황을 확인할 수 있습니다.
+              KKOT PAY에 화환 회수를 맡긴 신청자는 신청 시 입력한 휴대폰번호로 처리 진행 상황을 확인할 수 있습니다.
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
