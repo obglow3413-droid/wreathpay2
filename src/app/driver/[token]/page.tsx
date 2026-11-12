@@ -22,7 +22,7 @@ export default async function DriverPage({ params }: { params: Promise<{ token: 
         const { data } = await svc
           .from("pickup_orders")
           .select(
-            "estimate_request_id, estimate_requests!inner(id, request_no, status, place_name, address, address_detail, pickup_date, pickup_time_slot, quantity_range, customer_note, customers(name, phone))"
+            "estimate_request_id, estimate_requests!inner(id, request_no, status, place_name, address, address_detail, pickup_date, pickup_time_slot, quantity_range, customer_note, ribbon_wanted, customers(name, phone))"
           )
           .eq("driver_id", driver.id)
           .in("estimate_requests.status", OPEN);
@@ -42,6 +42,7 @@ export default async function DriverPage({ params }: { params: Promise<{ token: 
                   slot: r.pickup_time_slot,
                   quantity: r.quantity_range,
                   note: r.customer_note,
+                  ribbonWanted: r.ribbon_wanted !== false,
                   name: c?.name ?? "",
                   phone: c?.phone ?? "",
                 } as Job)

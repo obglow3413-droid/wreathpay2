@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { RIBBON_PHOTO_BUCKET } from "@/lib/ribbon";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
@@ -49,18 +50,20 @@ export async function POST(req: Request) {
     const { data: customers } = await supabase.from("customers").select("id, phone").ilike("phone", pattern).limit(50);
     const ids = (customers ?? []).filter((c) => digits(c.phone ?? "") === phone).map((c) => c.id);
 
-    if (ids.length === 0) {
+    const hasBoards = (await supabase.from("ribbon_boards").select("id", { count: "exact", head: true }).eq("host_phone", phone).gt("expires_at", new Date().toISOString())).count ?? 0;
+    if (ids.length === 0 && hasBoards === 0) {
       return NextResponse.json({ error: "이 번호로 접수된 내역이 없어요. 신청 시 입력한 번호를 확인해주세요." }, { status: 404 });
     }
 
+    const customerIds = ids.length ? ids : ["00000000-0000-0000-0000-000000000000"];
     const base =
-      "id, request_no, event_type, quantity_range, status, pickup_date, pickup_time_slot, customer_payback_amount, created_at";
+      "id, request_no, event_type, quantity_range, status, pickup_date, pickup_time_slot, customer_payback_amount, created_at, ribbon_wanted";
     let rows: Record<string, unknown>[] | null = null;
     // ai_estimate 열은 마이그레이션 적용 후에만 존재 → 실패하면 없이 조회
-    const withAi = await supabase.from("estimate_requests").select(`${base}, ai_estimate`).in("customer_id", ids).order("created_at", { ascending: false }).limit(10);
+    const withAi = await supabase.from("estimate_requests").select(`${base}, ai_estimate`).in("customer_id", customerIds).order("created_at", { ascending: false }).limit(10);
     if (!withAi.error) rows = withAi.data as unknown as Record<string, unknown>[];
     else {
-      const plain = await supabase.from("estimate_requests").select(base).in("customer_id", ids).order("created_at", { ascending: false }).limit(10);
+      const plain = await supabase.from("estimate_requests").select(base).in("customer_id", customerIds).order("created_at", { ascending: false }).limit(10);
       rows = (plain.data ?? []) as unknown as Record<string, unknown>[];
     }
 
@@ -72,6 +75,27 @@ export async function POST(req: Request) {
         .select("estimate_request_id, bank_name, account_last4")
         .in("estimate_request_id", requestIds);
       for (const a of acc ?? []) accounts.set(a.estimate_request_id, { bankName: a.bank_name, last4: a.account_last4 });
+    } catch {}
+
+    // 수거 후 돌려드리는 실물 리본 사진(수거 완료·정산 완료 건만, 임시 링크 1시간)
+    const ribbons = new Map<string, { count: number | null; photos: string[] }>();
+    try {
+      const doneIds = (rows ?? []).filter((r) => r.status === "collected" || r.status === "settled").map((r) => r.id as string);
+      if (doneIds.length) {
+        const { data: pos } = await supabase
+          .from("pickup_orders")
+          .select("estimate_request_id, ribbon_count, ribbon_photo_paths")
+          .in("estimate_request_id", doneIds);
+        for (const po of pos ?? []) {
+          const paths: string[] = po.ribbon_photo_paths ?? [];
+          const photos: string[] = [];
+          for (const path of paths) {
+            const { data: signed } = await supabase.storage.from(RIBBON_PHOTO_BUCKET).createSignedUrl(path, 3600);
+            if (signed?.signedUrl) photos.push(signed.signedUrl);
+          }
+          if (photos.length || po.ribbon_count != null) ribbons.set(po.estimate_request_id, { count: po.ribbon_count, photos });
+        }
+      }
     } catch {}
 
     const items = (rows ?? []).map((r) => {
@@ -90,10 +114,29 @@ export async function POST(req: Request) {
         createdAt: r.created_at,
         aiRange,
         account: accounts.get(r.id as string) ?? null,
+        ribbonWanted: r.ribbon_wanted !== false,
+        ribbon: ribbons.get(r.id as string) ?? null,
       };
     });
 
-    return NextResponse.json({ items });
+    // 이 번호로 만든 마음 전하기 보드(만료 전)
+    let boards: { code: string; title: string; count: number; messages: { id: string; sender: string; text: string }[] }[] = [];
+    try {
+      const { data: bs } = await supabase
+        .from("ribbon_boards")
+        .select("id, code, title, ribbon_messages(id, sender_name, message, created_at)")
+        .eq("host_phone", phone)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(5);
+      boards = (bs ?? []).map((b) => {
+        const ms = ((b.ribbon_messages ?? []) as { id: string; sender_name: string; message: string; created_at: string }[])
+          .sort((a, c) => c.created_at.localeCompare(a.created_at));
+        return { code: b.code, title: b.title, count: ms.length, messages: ms.slice(0, 50).map((m) => ({ id: m.id, sender: m.sender_name, text: m.message })) };
+      });
+    } catch {}
+
+    return NextResponse.json({ items, boards });
   } catch (e) {
     console.error("[status lookup]", e);
     return NextResponse.json({ error: "조회 중 문제가 생겼어요. 잠시 후 다시 시도해주세요." }, { status: 500 });

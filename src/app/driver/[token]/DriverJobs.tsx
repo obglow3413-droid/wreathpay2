@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { compressImage } from "@/lib/compressImage";
 import { QUANTITY_RANGE_LABEL, type QuantityRange } from "@/lib/types";
 
 export interface Job {
@@ -15,6 +16,7 @@ export interface Job {
   slot: string;
   quantity: string;
   note: string | null;
+  ribbonWanted: boolean;
   name: string;
   phone: string;
 }
@@ -24,11 +26,33 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
   const [busy, setBusy] = useState<string | null>(null);
   const [qty, setQty] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const [ribbonCount, setRibbonCount] = useState<Record<string, string>>({});
+  const [ribbonFiles, setRibbonFiles] = useState<Record<string, File[]>>({});
+
+  async function pickRibbon(id: string, list: FileList | null) {
+    if (!list) return;
+    const compressed = await Promise.all(Array.from(list).map(compressImage));
+    setRibbonFiles((p) => ({ ...p, [id]: [...(p[id] ?? []), ...compressed].slice(0, 8) }));
+  }
 
   async function act(job: Job, action: "start" | "complete") {
     setBusy(job.id + action);
     setError(null);
     try {
+      // 수거 완료 전에 리본 개수·사진을 먼저 저장(고객에게 돌려줄 자료)
+      if (action === "complete" && job.ribbonWanted) {
+        const fd = new FormData();
+        fd.append("token", token);
+        fd.append("requestId", job.id);
+        if (ribbonCount[job.id]) fd.append("count", ribbonCount[job.id]);
+        (ribbonFiles[job.id] ?? []).forEach((f) => fd.append("files", f));
+        const rr = await fetch("/api/driver/ribbon", { method: "POST", body: fd });
+        if (!rr.ok) {
+          setError((await rr.json().catch(() => ({}))).error ?? "리본 정보를 저장하지 못했어요.");
+          setBusy(null);
+          return;
+        }
+      }
       const res = await fetch("/api/driver/action", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,6 +129,29 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
                   {busy === j.id + "start" ? "처리 중..." : "🚚 이동 시작"}
                 </button>
               ) : null}
+
+              {j.ribbonWanted && (
+                <div className="mt-4 rounded-xl border border-border bg-surface p-3.5">
+                  <p className="text-[13px] font-bold">🎗 리본 챙기기 (고객이 돌려받기 원해요)</p>
+                  <p className="mt-0.5 text-[11.5px] text-muted">리본을 떼어 봉투에 모으고, 문구가 읽히게 사진을 찍어주세요.</p>
+                  <div className="mt-2 flex gap-2">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      max={500}
+                      value={ribbonCount[j.id] ?? ""}
+                      onChange={(e) => setRibbonCount((p) => ({ ...p, [j.id]: e.target.value }))}
+                      placeholder="리본 개수"
+                      className="h-11 w-28 rounded-lg border border-border bg-white px-3 text-[14px]"
+                    />
+                    <label className="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border bg-white text-[13px] font-medium">
+                      📷 리본 사진 {(ribbonFiles[j.id]?.length ?? 0) > 0 ? `(${ribbonFiles[j.id].length}장)` : "찍기"}
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { pickRibbon(j.id, e.target.files); e.target.value = ""; }} />
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-3 flex gap-2">
                 <input

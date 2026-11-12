@@ -35,6 +35,7 @@ export async function POST(request: Request) {
     const countRaw = Math.round(Number(formData.get("customerCount")));
     const customerCount = Number.isFinite(countRaw) && countRaw >= 1 && countRaw <= 500 ? countRaw : null;
     const dispatchMode = formData.get("dispatchMode") === "fast" ? "fast" : "date";
+    const ribbonWanted = formData.get("ribbonWanted") !== "0";
     const images = formData.getAll("images").filter((f): f is File => f instanceof File);
 
     if (
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
           address_detail: addressDetail || null,
           pickup_date: pickupDate,
           pickup_time_slot: pickupTimeSlot,
+          ribbon_wanted: ribbonWanted,
           customer_note: dispatchMode === "fast" ? "빠른 배정 요청(가장 빠른 일정으로 안내 희망)" : null,
           ...(hasCoords ? { address_lat: latRaw, address_lng: lngRaw } : {}),
           agreed_disposal_authority: true,

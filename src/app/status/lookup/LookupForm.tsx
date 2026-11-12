@@ -25,6 +25,15 @@ interface Item {
   aiRange: { low: number; high: number } | null;
   account: { bankName: string; last4: string } | null;
   createdAt: string;
+  ribbonWanted: boolean;
+  ribbon: { count: number | null; photos: string[] } | null;
+}
+
+interface Board {
+  code: string;
+  title: string;
+  count: number;
+  messages: { id: string; sender: string; text: string }[];
 }
 
 export default function LookupForm() {
@@ -32,6 +41,7 @@ export default function LookupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [items, setItems] = useState<Item[] | null>(null);
+  const [boards, setBoards] = useState<Board[]>([]);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [lookedPhone, setLookedPhone] = useState("");
   const phoneRef = useRef("");
@@ -56,6 +66,7 @@ export default function LookupForm() {
         const { ok, json } = await fetchItems(phoneRef.current);
         if (ok) {
           setItems(json.items as Item[]);
+          setBoards((json.boards ?? []) as Board[]);
           setLastUpdated(new Date());
         }
       } catch {}
@@ -75,6 +86,7 @@ export default function LookupForm() {
         phoneRef.current = phone;
         setLookedPhone(phone);
         setItems(json.items as Item[]);
+        setBoards((json.boards ?? []) as Board[]);
         setLastUpdated(new Date());
       }
     } catch {
@@ -172,6 +184,29 @@ export default function LookupForm() {
                   )
                 )}
 
+                {item.ribbonWanted && (item.status === "collected" || item.status === "settled") && (
+                  <div className="mt-4 rounded-lg border border-border px-4 py-3">
+                    <p className="text-[13px] font-bold">🎗 리본 앨범</p>
+                    {item.ribbon && item.ribbon.photos.length > 0 ? (
+                      <>
+                        <p className="mt-0.5 text-[12px] text-muted">
+                          {item.ribbon.count != null ? `리본 ${item.ribbon.count}개를 챙겼어요. ` : ""}사진을 눌러 저장하세요. (수거 후 30일간 보관)
+                        </p>
+                        <div className="mt-2 grid grid-cols-3 gap-2">
+                          {item.ribbon.photos.map((src, i) => (
+                            <a key={i} href={src} target="_blank" rel="noopener noreferrer" download>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={src} alt={`리본 사진 ${i + 1}`} className="aspect-square w-full rounded-lg object-cover" />
+                            </a>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="mt-0.5 text-[12px] text-muted">기사님이 리본을 정리하는 중이에요. 사진이 올라오면 여기에 보여요.</p>
+                    )}
+                  </div>
+                )}
+
                 {active && (
                   <>
                     <div className="mt-4">
@@ -188,6 +223,15 @@ export default function LookupForm() {
         </div>
       )}
 
+      {boards.length > 0 && (
+        <div className="mt-6 space-y-3">
+          <p className="text-[14px] font-bold">🎗 내가 만든 마음 전하기</p>
+          {boards.map((b) => (
+            <BoardCard key={b.code} board={b} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setBoards((json.boards ?? []) as Board[]))} />
+          ))}
+        </div>
+      )}
+
       <a
         href="https://d5dpz.channel.io"
         target="_blank"
@@ -197,5 +241,42 @@ export default function LookupForm() {
         💬 채널톡으로 문의하기
       </a>
     </>
+  );
+}
+
+function BoardCard({ board, phone, onChanged }: { board: Board; phone: string; onChanged: () => void }) {
+  const [open, setOpen] = useState(false);
+  async function remove(id: string) {
+    if (!window.confirm("이 문구를 삭제할까요?")) return;
+    await fetch("/api/ribbon/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, messageId: id }) });
+    onChanged();
+  }
+  return (
+    <div className="rounded-xl border border-border bg-white p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[14px] font-semibold">{board.title}</p>
+        <a href={`/ribbon/${board.code}`} className="text-[12.5px] font-medium text-brand-dark underline">
+          보드 열기
+        </a>
+      </div>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="mt-1 text-[12.5px] text-muted">
+        모인 마음 {board.count}개 {open ? "▲" : "▼"}
+      </button>
+      {open && (
+        <ul className="mt-2 space-y-2">
+          {board.messages.map((m) => (
+            <li key={m.id} className="rounded-lg bg-surface px-3 py-2 text-[13px]">
+              <p className="whitespace-pre-wrap break-words">{m.text}</p>
+              <div className="mt-1 flex items-center justify-between text-[12px] text-muted">
+                <span>— {m.sender}</span>
+                <button type="button" onClick={() => remove(m.id)} className="underline">
+                  삭제
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

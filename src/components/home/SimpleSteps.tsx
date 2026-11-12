@@ -40,6 +40,16 @@ export default function SimpleSteps() {
           자세한 이용안내와 자주 묻는 질문
           <ChevronRight size={15} />
         </Link>
+        <Link
+          href="/ribbon"
+          className="hover-lift mt-4 flex items-center justify-between rounded-2xl border border-line bg-paper px-5 py-4"
+        >
+          <span>
+            <span className="block text-[15px] font-bold">🎗 디지털 리본, 마음 전하기</span>
+            <span className="mt-0.5 block text-[12.5px] text-muted">링크 하나로 조문·축하 리본 문구를 모아요</span>
+          </span>
+          <ChevronRight size={18} className="text-muted" />
+        </Link>
       </div>
     </section>
   );

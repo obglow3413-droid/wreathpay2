@@ -1,5 +1,6 @@
 "use client";
 
+import { compressImage } from "@/lib/compressImage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
@@ -52,23 +53,6 @@ function isInSeoul(lat: number, lng: number) {
   return lat > 37.41 && lat < 37.72 && lng > 126.76 && lng < 127.19;
 }
 
-/** 휴대폰 사진(수 MB)을 긴 변 1600px · JPEG로 줄여서 업로드/AI 분석을 빠르고 가볍게 만든다. 실패하면 원본 그대로 사용. */
-async function compressImage(file: File): Promise<File> {
-  try {
-    if (!file.type.startsWith("image/") || file.size < 400 * 1024) return file;
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.82));
-    if (!blob || blob.size >= file.size) return file;
-    return new File([blob], file.name.replace(/\.\w+$/, "") + ".jpg", { type: "image/jpeg" });
-  } catch {
-    return file;
-  }
-}
 
 function toYmd(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -141,6 +125,7 @@ export default function EstimateWizard({
   const [addressDetail, setAddressDetail] = useState("");
   const [pickupDate, setPickupDate] = useState(() => daysFromNow(1));
   const [pickupTimeSlot, setPickupTimeSlot] = useState<PickupTimeSlot | null>("시간 협의");
+  const [ribbonWanted, setRibbonWanted] = useState(true);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [agreements, setAgreements] = useState({
@@ -322,6 +307,7 @@ export default function EstimateWizard({
         formData.append("addressLng", String(coords.lng));
       }
       formData.append("dispatchMode", dispatchMode);
+      formData.append("ribbonWanted", ribbonWanted ? "1" : "0");
       formData.append("placeName", placeName);
       formData.append("address", address);
       formData.append("addressDetail", addressDetail);
@@ -631,7 +617,22 @@ export default function EstimateWizard({
             </div>
           )}
 
-          <div className="mt-6 space-y-2">
+          <label className="mt-6 flex items-start gap-3 rounded-xl border border-border px-4 py-3.5">
+            <input
+              type="checkbox"
+              checked={ribbonWanted}
+              onChange={(e) => setRibbonWanted(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-[color:var(--brand)]"
+            />
+            <span>
+              <span className="block text-[14px] font-semibold">리본 문구 챙겨받기</span>
+              <span className="mt-0.5 block text-[12px] leading-relaxed text-muted">
+                수거할 때 화환 리본을 떼어 모아서, 사진으로 정리해 돌려드려요. (원치 않으면 체크를 풀어주세요)
+              </span>
+            </span>
+          </label>
+
+          <div className="mt-4 space-y-2">
             <label className="flex items-center gap-3 rounded-lg bg-surface px-4 py-3.5">
               <input
                 type="checkbox"
