@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const countRaw = Math.round(Number(formData.get("customerCount")));
     const customerCount = Number.isFinite(countRaw) && countRaw >= 1 && countRaw <= 500 ? countRaw : null;
     const dispatchMode = formData.get("dispatchMode") === "fast" ? "fast" : "date";
-    const ribbonWanted = formData.get("ribbonWanted") !== "0";
+    const ribbonWanted = formData.get("ribbonWanted") === "1";
     const images = formData.getAll("images").filter((f): f is File => f instanceof File);
 
     if (

@@ -78,13 +78,13 @@ export async function POST(req: Request) {
     } catch {}
 
     // 수거 후 돌려드리는 실물 리본 사진(수거 완료·정산 완료 건만, 임시 링크 1시간)
-    const ribbons = new Map<string, { count: number | null; photos: string[] }>();
+    const ribbons = new Map<string, { count: number | null; photos: string[]; listStatus: string; list: { sender: string; text: string; uncertain?: boolean }[] }>();
     try {
       const doneIds = (rows ?? []).filter((r) => r.status === "collected" || r.status === "settled").map((r) => r.id as string);
       if (doneIds.length) {
         const { data: pos } = await supabase
           .from("pickup_orders")
-          .select("estimate_request_id, ribbon_count, ribbon_photo_paths")
+          .select("estimate_request_id, ribbon_count, ribbon_photo_paths, ribbon_extract, ribbon_extract_status")
           .in("estimate_request_id", doneIds);
         for (const po of pos ?? []) {
           const paths: string[] = po.ribbon_photo_paths ?? [];
@@ -93,7 +93,9 @@ export async function POST(req: Request) {
             const { data: signed } = await supabase.storage.from(RIBBON_PHOTO_BUCKET).createSignedUrl(path, 3600);
             if (signed?.signedUrl) photos.push(signed.signedUrl);
           }
-          if (photos.length || po.ribbon_count != null) ribbons.set(po.estimate_request_id, { count: po.ribbon_count, photos });
+          const listStatus = (po.ribbon_extract_status as string) ?? "none";
+          const list = listStatus === "none" ? [] : (((po.ribbon_extract as { items?: { sender: string; text: string; uncertain?: boolean }[] } | null)?.items) ?? []);
+          if (photos.length || po.ribbon_count != null || list.length) ribbons.set(po.estimate_request_id, { count: po.ribbon_count, photos, listStatus, list });
         }
       }
     } catch {}
@@ -114,8 +116,8 @@ export async function POST(req: Request) {
         createdAt: r.created_at,
         aiRange,
         account: accounts.get(r.id as string) ?? null,
-        ribbonWanted: r.ribbon_wanted !== false,
-        ribbon: ribbons.get(r.id as string) ?? null,
+        ribbonWanted: r.ribbon_wanted === true,
+        ribbon: r.ribbon_wanted === true ? (ribbons.get(r.id as string) ?? null) : null,
       };
     });
 

@@ -125,7 +125,7 @@ export default function EstimateWizard({
   const [addressDetail, setAddressDetail] = useState("");
   const [pickupDate, setPickupDate] = useState(() => daysFromNow(1));
   const [pickupTimeSlot, setPickupTimeSlot] = useState<PickupTimeSlot | null>("시간 협의");
-  const [ribbonWanted, setRibbonWanted] = useState(true);
+  const [ribbonWanted, setRibbonWanted] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [agreements, setAgreements] = useState({
@@ -625,9 +625,9 @@ export default function EstimateWizard({
               className="mt-0.5 h-4 w-4 accent-[color:var(--brand)]"
             />
             <span>
-              <span className="block text-[14px] font-semibold">리본 문구 챙겨받기</span>
+              <span className="block text-[14px] font-semibold">리본을 못 챙기시나요? 받은 화환 명단 정리</span>
               <span className="mt-0.5 block text-[12px] leading-relaxed text-muted">
-                수거할 때 화환 리본을 떼어 모아서, 사진으로 정리해 돌려드려요. (원치 않으면 체크를 풀어주세요)
+                리본에 적힌 보낸 분·문구를 읽어서 &ldquo;내가 받은 화환 리스트&rdquo;로 정리해 드려요. 답례 인사 챙기실 때 쓰세요. (리본을 직접 챙기시면 체크 안 하셔도 돼요)
               </span>
             </span>
           </label>

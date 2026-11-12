@@ -26,7 +26,7 @@ interface Item {
   account: { bankName: string; last4: string } | null;
   createdAt: string;
   ribbonWanted: boolean;
-  ribbon: { count: number | null; photos: string[] } | null;
+  ribbon: { count: number | null; photos: string[]; listStatus: string; list: { sender: string; text: string; uncertain?: boolean }[] } | null;
 }
 
 interface Board {
@@ -184,28 +184,7 @@ export default function LookupForm() {
                   )
                 )}
 
-                {item.ribbonWanted && (item.status === "collected" || item.status === "settled") && (
-                  <div className="mt-4 rounded-lg border border-border px-4 py-3">
-                    <p className="text-[13px] font-bold">🎗 리본 앨범</p>
-                    {item.ribbon && item.ribbon.photos.length > 0 ? (
-                      <>
-                        <p className="mt-0.5 text-[12px] text-muted">
-                          {item.ribbon.count != null ? `리본 ${item.ribbon.count}개를 챙겼어요. ` : ""}사진을 눌러 저장하세요. (수거 후 30일간 보관)
-                        </p>
-                        <div className="mt-2 grid grid-cols-3 gap-2">
-                          {item.ribbon.photos.map((src, i) => (
-                            <a key={i} href={src} target="_blank" rel="noopener noreferrer" download>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={src} alt={`리본 사진 ${i + 1}`} className="aspect-square w-full rounded-lg object-cover" />
-                            </a>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <p className="mt-0.5 text-[12px] text-muted">기사님이 리본을 정리하는 중이에요. 사진이 올라오면 여기에 보여요.</p>
-                    )}
-                  </div>
-                )}
+                <RibbonSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
 
                 {active && (
                   <>
@@ -277,6 +256,118 @@ function BoardCard({ board, phone, onChanged }: { board: Board; phone: string; o
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function csvEscape(v: string) {
+  return `"${v.replace(/"/g, '""')}"`;
+}
+
+/** 받은 화환 명단: 신청 전 안내 → 신청됨 → 수거 후 명단(복사·CSV) */
+function RibbonSection({ item, phone, onChanged }: { item: Item; phone: string; onChanged: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const beforeCollect = !["collected", "settled", "cancelled"].includes(item.status);
+
+  async function toggle(enable: boolean) {
+    setBusy(true);
+    await fetch("/api/status/ribbon-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestNo: item.requestNo, phone, enable }),
+    });
+    setBusy(false);
+    onChanged();
+  }
+
+  if (!item.ribbonWanted) {
+    if (!beforeCollect) return null;
+    return (
+      <div className="mt-4 rounded-lg border border-border px-4 py-3">
+        <p className="text-[13px] font-bold">🎗 받은 화환 명단 정리</p>
+        <p className="mt-0.5 text-[12px] leading-relaxed text-muted">
+          리본을 못 챙기셨다면, 리본에 적힌 보낸 분·문구를 읽어 명단으로 정리해 드려요.
+        </p>
+        <button type="button" disabled={busy} onClick={() => toggle(true)} className="mt-2 h-10 w-full rounded-lg bg-brand text-[13.5px] font-semibold text-white disabled:opacity-50">
+          {busy ? "처리 중..." : "명단 정리 신청하기"}
+        </button>
+      </div>
+    );
+  }
+
+  const list = item.ribbon?.list ?? [];
+  if (list.length === 0) {
+    return (
+      <div className="mt-4 rounded-lg border border-border px-4 py-3">
+        <p className="text-[13px] font-bold">🎗 받은 화환 명단 · 신청됨</p>
+        <p className="mt-0.5 text-[12px] text-muted">
+          {beforeCollect ? "수거할 때 리본을 확인해서 수거 후 정리해 보여드려요." : "기사님이 올린 리본 사진을 정리하는 중이에요. 완료되면 여기에 보여요."}
+        </p>
+        {beforeCollect && (
+          <button type="button" disabled={busy} onClick={() => toggle(false)} className="mt-1.5 text-[12px] text-muted underline">
+            신청 취소
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const confirmed = item.ribbon?.listStatus === "confirmed";
+  const asText = list.map((r, i) => `${i + 1}. ${r.sender}${r.text ? ` - ${r.text}` : ""}`).join("\n");
+  function copy() {
+    navigator.clipboard.writeText(asText).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  }
+  function csv() {
+    const body = ["번호,보낸 분,문구", ...list.map((r, i) => [i + 1, csvEscape(r.sender), csvEscape(r.text)].join(","))].join("\r\n");
+    const blob = new Blob(["\uFEFF" + body], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "받은화환명단.csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  return (
+    <div className="mt-4 rounded-lg border border-border px-4 py-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[13px] font-bold">🎗 내가 받은 화환 명단 ({list.length})</p>
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${confirmed ? "bg-brand text-white" : "bg-surface text-muted"}`}>
+          {confirmed ? "검수 완료" : "AI 정리본 · 검수 전"}
+        </span>
+      </div>
+      {!confirmed && <p className="mt-0.5 text-[11.5px] text-muted">AI가 읽은 결과라 틀린 글자가 있을 수 있어요. 검수가 끝나면 표시가 바뀌어요.</p>}
+      <ol className="mt-2 space-y-1.5">
+        {list.map((r, i) => (
+          <li key={i} className="rounded-lg bg-surface px-3 py-2 text-[13px]">
+            <span className="font-semibold">{i + 1}. {r.sender || "(보낸 분 미상)"}</span>
+            {r.text && <span className="text-muted"> · {r.text}</span>}
+            {r.uncertain && !confirmed && <span className="text-amber-700"> (확인 필요)</span>}
+          </li>
+        ))}
+      </ol>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button type="button" onClick={copy} className="h-10 rounded-lg border border-border text-[13px] font-medium">
+          {copied ? "복사됨 ✓" : "텍스트 복사"}
+        </button>
+        <button type="button" onClick={csv} className="h-10 rounded-lg border border-border text-[13px] font-medium">
+          엑셀(CSV) 받기
+        </button>
+      </div>
+      {item.ribbon && item.ribbon.photos.length > 0 && (
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          {item.ribbon.photos.map((src, i) => (
+            <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt={`리본 사진 ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />
+            </a>
+          ))}
+        </div>
+      )}
+      <p className="mt-2 text-[11px] text-muted-light">리본 사진과 명단은 수거 후 30일간 보관돼요.</p>
     </div>
   );
 }

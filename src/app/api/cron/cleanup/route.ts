@@ -24,12 +24,12 @@ export async function GET(req: Request) {
     .from("pickup_orders")
     .select("id, ribbon_photo_paths")
     .lt("updated_at", cutoff)
-    .neq("ribbon_photo_paths", "{}");
+    .or("ribbon_extract_status.neq.none,ribbon_photo_paths.neq.{}");
   for (const po of old ?? []) {
     const paths: string[] = po.ribbon_photo_paths ?? [];
-    if (!paths.length) continue;
-    await supabase.storage.from(RIBBON_PHOTO_BUCKET).remove(paths);
-    await supabase.from("pickup_orders").update({ ribbon_photo_paths: [] }).eq("id", po.id);
+    if (paths.length) await supabase.storage.from(RIBBON_PHOTO_BUCKET).remove(paths);
+    // 사진과 함께 추출한 명단(이름·문구)도 30일 뒤 삭제
+    await supabase.from("pickup_orders").update({ ribbon_photo_paths: [], ribbon_extract: null, ribbon_extract_status: "none" }).eq("id", po.id);
     photos += paths.length;
   }
   return NextResponse.json({ ok: true, boardsDeleted: boards?.length ?? 0, photosDeleted: photos });
