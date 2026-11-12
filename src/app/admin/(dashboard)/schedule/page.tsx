@@ -22,6 +22,8 @@ interface Row {
   pickup_date: string;
   pickup_time_slot: string;
   status: RequestStatus;
+  address_lat?: number | null;
+  address_lng?: number | null;
   customers?: { name: string; phone: string } | { name: string; phone: string }[] | null;
 }
 
@@ -43,6 +45,25 @@ function dayLabel(date: string, today: string): string {
   return `${date} (${wd}) · ${rel}`;
 }
 
+/** 시간대 순서를 지키면서, 같은 시간대 안에서는 직전 방문지에서 가까운 곳부터 잇는 권장 순서 */
+function routeOrder(list: Row[]): Row[] {
+  const out: Row[] = [];
+  const dist = (a: Row, b: Row) =>
+    a.address_lat != null && a.address_lng != null && b.address_lat != null && b.address_lng != null
+      ? Math.hypot(a.address_lat - b.address_lat, (a.address_lng - b.address_lng) * 0.8)
+      : Number.POSITIVE_INFINITY;
+  for (const slot of [...SLOT_ORDER, "__other"]) {
+    const rest = list.filter((r) => (slot === "__other" ? !SLOT_ORDER.includes(r.pickup_time_slot) : r.pickup_time_slot === slot));
+    while (rest.length) {
+      const last = out[out.length - 1];
+      let best = 0;
+      if (last) for (let i = 1; i < rest.length; i++) if (dist(last, rest[i]) < dist(last, rest[best])) best = i;
+      out.push(rest.splice(best, 1)[0]);
+    }
+  }
+  return out;
+}
+
 async function getRows(): Promise<Row[]> {
   if (!isSupabaseConfigured()) return [];
   try {
@@ -50,7 +71,7 @@ async function getRows(): Promise<Row[]> {
     const { data, error } = await supabase
       .from("estimate_requests")
       .select(
-        "id, request_no, event_type, quantity_range, place_name, address, pickup_date, pickup_time_slot, status, customers(name, phone)"
+        "id, request_no, event_type, quantity_range, place_name, address, pickup_date, pickup_time_slot, status, address_lat, address_lng, customers(name, phone)"
       )
       .not("status", "in", `(${DONE.join(",")})`)
       .order("pickup_date", { ascending: true })
@@ -84,7 +105,7 @@ export default async function SchedulePage() {
     <div>
       <h1 className="text-[20px] font-bold">수거 일정 보드</h1>
       <p className="mt-1 text-[13px] text-muted">
-        수거 전(수거완료·정산·취소 제외) 신청을 날짜와 지역별로 묶어 보여줘요. 배차 동선을 짤 때 쓰세요.
+        수거 전(수거완료·정산·취소 제외) 신청을 날짜와 지역별로 묶어 보여줘요. 번호는 같은 시간대 안에서 가까운 곳부터 도는 권장 순서예요(좌표가 있는 건 기준).
       </p>
 
       <div className="mt-5 grid max-w-xl grid-cols-3 gap-3">
@@ -119,9 +140,7 @@ export default async function SchedulePage() {
                 {[...regions.entries()]
                   .sort((a, b) => b[1].length - a[1].length)
                   .map(([region, list]) => {
-                    const sorted = [...list].sort(
-                      (a, b) => SLOT_ORDER.indexOf(a.pickup_time_slot) - SLOT_ORDER.indexOf(b.pickup_time_slot)
-                    );
+                    const sorted = routeOrder(list);
                     return (
                       <div key={region} className="px-5 py-3.5">
                         <p className="text-[13px] font-semibold">
@@ -135,6 +154,7 @@ export default async function SchedulePage() {
                                 key={r.id}
                                 className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px]"
                               >
+                                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-forest text-[10.5px] font-bold text-ivory">{sorted.indexOf(r) + 1}</span>
                                 <span className="w-12 shrink-0 font-semibold">{r.pickup_time_slot}</span>
                                 <Link href={`/admin/requests/${r.id}`} className="font-medium text-brand-dark">
                                   {r.request_no}

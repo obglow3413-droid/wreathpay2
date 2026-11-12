@@ -33,6 +33,12 @@ export default function SiteFooter() {
           <Link href="/guide" className="underline hover:text-muted">
             이용안내
           </Link>
+          <Link href="/reserve" className="underline hover:text-muted">
+            사전 예약
+          </Link>
+          <Link href="/reviews" className="underline hover:text-muted">
+            후기·사례
+          </Link>
           <Link href="/places" className="underline hover:text-muted">
             수거 가능 장소
           </Link>

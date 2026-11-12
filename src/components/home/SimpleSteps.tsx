@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PaybackCalculator from "@/components/tools/PaybackCalculator";
 import { Camera, CalendarCheck, Wallet, ChevronRight } from "lucide-react";
 
 const STEPS = [
@@ -40,6 +41,19 @@ export default function SimpleSteps() {
           자세한 이용안내와 자주 묻는 질문
           <ChevronRight size={15} />
         </Link>
+        <div className="mt-6">
+          <PaybackCalculator />
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <Link href="/reserve" className="hover-lift rounded-2xl border border-line bg-paper px-4 py-4">
+            <span className="block text-[14px] font-bold">🗓 사전 예약</span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-muted">행사 전에 수거를 미리 잡아요</span>
+          </Link>
+          <Link href="/share-text" className="hover-lift rounded-2xl border border-line bg-paper px-4 py-4">
+            <span className="block text-[14px] font-bold">✍️ 안내 문구</span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-muted">청첩장·부고용 화환 문구</span>
+          </Link>
+        </div>
         <Link
           href="/places"
           className="hover-lift mt-4 flex items-center justify-between rounded-2xl border border-line bg-paper px-5 py-4"

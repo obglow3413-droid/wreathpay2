@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CirculationForm from "@/components/admin/CirculationForm";
 import { notFound } from "next/navigation";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -68,6 +69,13 @@ export default async function AdminRequestDetailPage({
           }[]
         }
         drivers={drivers ?? []}
+      />
+      <CirculationForm
+        requestId={id}
+        initial={(() => {
+          const po = Array.isArray(requestRow.pickup_orders) ? requestRow.pickup_orders[0] : requestRow.pickup_orders;
+          return { reuse: po?.reuse_count ?? null, discard: po?.discard_count ?? null };
+        })()}
       />
     </div>
   );

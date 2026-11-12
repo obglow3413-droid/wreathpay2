@@ -27,7 +27,9 @@ interface Item {
   createdAt: string;
   ribbonWanted: boolean;
   reviewed: boolean;
-  proof: { actualQuantity: number | null; photo: string | null; collectedAt: string | null } | null;
+  proof: { actualQuantity: number | null; photo: string | null; collectedAt: string | null; reuse: number | null; discard: number | null; confirmed: boolean } | null;
+  etaAt: string | null;
+  rebook: { placeName: string; address: string } | null;
   refCode: string | null;
   updatedAt: string;
   ribbon: { count: number | null; photos: string[]; listStatus: string; list: { sender: string; text: string; uncertain?: boolean }[] } | null;
@@ -211,6 +213,11 @@ export default function LookupForm() {
                         ? `🚚 꽃페이 전담기사님이 ${item.pickupDate} 수거를 위해 이동 중입니다`
                         : `꽃페이 전담기사님이 배정됐어요 · 수거 예정일 ${item.pickupDate}`}
                     </p>
+                    {item.status === "collecting" && item.etaAt && (
+                      <p className="mt-1 text-[13.5px] font-semibold">
+                        약 {new Date(item.etaAt).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 도착 예정
+                      </p>
+                    )}
                     <p className="mt-0.5 text-[12px] text-muted">상태가 바뀌면 이 화면에 바로 반영돼요.</p>
                   </div>
                 )}
@@ -253,9 +260,18 @@ export default function LookupForm() {
 
                 <ManageSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
 
-                {(item.status === "collected" || item.status === "settled") && <ProofSection item={item} />}
+                {(item.status === "collected" || item.status === "settled") && <ProofSection item={item} phone={lookedPhone} />}
 
                 {(item.status === "collected" || item.status === "settled") && <ReviewBox item={item} phone={lookedPhone} />}
+
+                {item.rebook && (item.status === "collected" || item.status === "settled" || item.status === "cancelled") && (
+                  <a
+                    href={`/estimate?pn=${encodeURIComponent(item.rebook.placeName)}&ad=${encodeURIComponent(item.rebook.address)}&eventType=${item.eventType}`}
+                    className="mt-4 flex h-11 w-full items-center justify-center rounded-xl border border-border bg-white text-[13.5px] font-semibold"
+                  >
+                    같은 장소로 다시 신청하기
+                  </a>
+                )}
 
                 <RibbonSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
 
@@ -273,6 +289,13 @@ export default function LookupForm() {
             );
           })}
         </div>
+      )}
+
+      {items && items.length > 1 && (
+        <p className="mt-4 rounded-xl border border-border bg-white px-4 py-3 text-[13px]">
+          지금까지 <b>{items.length}건</b> 신청 · 정산 완료{" "}
+          <b className="tabular-nums">{items.filter((i) => i.status === "settled").reduce((a, i) => a + i.paybackAmount, 0).toLocaleString("ko-KR")}원</b>
+        </p>
       )}
 
       {items && items.find((i) => i.refCode) && <ReferralBox code={items.find((i) => i.refCode)!.refCode!} />}
@@ -572,14 +595,28 @@ function ReviewBox({ item, phone }: { item: Item; phone: string }) {
 }
 
 /** 수거 완료 증빙(실제 수량·현장 사진) + 정산 완료 시 정산 내역 */
-function ProofSection({ item }: { item: Item }) {
+function ProofSection({ item, phone }: { item: Item; phone: string }) {
   const settled = item.status === "settled";
+  const [confirmed, setConfirmed] = useState(item.proof?.confirmed ?? false);
+  const [busy, setBusy] = useState(false);
+  async function confirm() {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/status/confirm", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestNo: item.requestNo, phone }) });
+      if (res.ok) setConfirmed(true);
+    } finally {
+      setBusy(false);
+    }
+  }
   const d = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-");
   const rows: [string, string][] = [
     ["행사 종류", EVENT_TYPE_LABEL[item.eventType]],
     ["실제 수거 수량", item.proof?.actualQuantity != null ? `${item.proof.actualQuantity}개` : QUANTITY_RANGE_LABEL[item.quantityRange]],
     ["수거일", d(item.proof?.collectedAt ?? item.updatedAt)],
   ];
+  if (item.proof && (item.proof.reuse != null || item.proof.discard != null)) {
+    rows.push(["순환 결과", `재사용 ${item.proof.reuse ?? 0}개 · 폐기 ${item.proof.discard ?? 0}개`]);
+  }
   if (settled) {
     rows.push(["정산 금액", `${item.paybackAmount.toLocaleString("ko-KR")}원`]);
     rows.push(["입금 계좌", item.account ? `${item.account.bankName} ****${item.account.last4}` : "-"]);
@@ -606,6 +643,23 @@ function ProofSection({ item }: { item: Item }) {
       {item.proof?.photo && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={item.proof.photo} alt="수거 완료 현장 사진" className="no-print mt-3 max-h-64 w-full rounded-lg object-cover" />
+      )}
+      {!settled && item.proof?.actualQuantity != null && (
+        <div className="no-print mt-3 rounded-lg bg-brand-tint px-3.5 py-3">
+          {confirmed ? (
+            <p className="text-[12.5px] font-semibold">수거 수량 {item.proof.actualQuantity}개 확인 완료 · 정산을 진행할게요.</p>
+          ) : (
+            <>
+              <p className="text-[12.5px] leading-relaxed">
+                현장에서 <b>{item.proof.actualQuantity}개</b>를 수거했어요. 신청 때 수량과 다르면 금액이 달라질 수 있어요. 맞다면 확인을 눌러 주세요.
+              </p>
+              <button type="button" disabled={busy} onClick={confirm} className="mt-2 h-10 w-full rounded-lg bg-brand text-[13.5px] font-semibold text-white disabled:opacity-40">
+                {busy ? "처리 중…" : "수량 확인했어요"}
+              </button>
+              <p className="mt-1.5 text-[11.5px] text-muted">수량이 다르다면 채널톡으로 알려 주세요.</p>
+            </>
+          )}
+        </div>
       )}
       {settled && <p className="mt-3 text-[11px] text-muted-light">발행: KKOT PAY ((주)루우크컴퍼니 · 사업자등록번호 230-88-03514)</p>}
     </div>

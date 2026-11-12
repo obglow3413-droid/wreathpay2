@@ -1,4 +1,5 @@
 import { isAdminUser } from "@/lib/adminAuth";
+import DriverMonthly from "@/components/admin/DriverMonthly";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured, isSupabaseConfigured } from "@/lib/supabase/config";
 import CopyButton from "@/components/status/CopyButton";
@@ -160,6 +161,8 @@ export default async function AdminDriversPage() {
           </tbody>
         </table>
       </div>
+
+      <DriverMonthly />
     </div>
   );
 }

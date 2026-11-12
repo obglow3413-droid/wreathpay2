@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import BackHeader from "@/components/layout/BackHeader";
 import PlaceBrowser from "@/components/places/PlaceBrowser";
 import { getAllPlaces } from "@/lib/places";
@@ -25,6 +26,14 @@ export default async function PlacesPage() {
         <PlaceBrowser
           places={places.map((p) => ({ slug: p.slug, kind: p.kind, name: p.name, sido: p.sido, sigungu: p.sigungu, address: p.address, isPartner: p.isPartner }))}
         />
+        <h2 className="mt-10 text-[15px] font-bold">지역별로 보기</h2>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[...new Set(places.map((p) => `${p.sido}-${p.sigungu}`))].map((a) => (
+            <Link key={a} href={`/area/${encodeURIComponent(a)}`} className="rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] font-medium">
+              {a.split("-")[1]}
+            </Link>
+          ))}
+        </div>
         <p className="mt-8 text-[11.5px] leading-relaxed text-muted-light">
           장례식장 정보는 보건복지부 &lsquo;장례식장 현황&rsquo; 공공데이터를 바탕으로 한 KKOT PAY의 수거 가능 지역 안내이며(웨딩홀은 KKOT PAY가 직접 정리한 주요 시설), &lsquo;제휴&rsquo; 표시가 없는 시설은 KKOT PAY와 제휴 관계가 아닙니다. 시설 규정에 따라 화환 반출·수거가 제한될 수 있고, 시설 정보는 변경되었을 수 있어요.
         </p>

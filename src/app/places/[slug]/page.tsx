@@ -52,6 +52,14 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
           <MapPin size={16} className="mt-0.5 shrink-0" />
           {place.address}
         </p>
+        <p className="mt-2 flex gap-3 text-[12.5px]">
+          <a href={`https://map.naver.com/p/search/${encodeURIComponent(place.name)}`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
+            지도에서 보기
+          </a>
+          <Link href={`/area/${encodeURIComponent(`${place.sido}-${place.sigungu}`)}`} className="underline underline-offset-4">
+            {place.sigungu} 전체 보기
+          </Link>
+        </p>
         {facts.length > 0 && <p className="mt-1.5 text-[12.5px] text-muted-light">{facts.join(" · ")}</p>}
 
         <Link

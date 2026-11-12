@@ -10,7 +10,7 @@ const PRE_COLLECT = ["customer_approved", "dispatch_pending", "dispatched"];
 
 /** 기사 전용: 이동 시작 / 수거 완료. 기사 링크 토큰 + 본인에게 배정된 건만 처리. */
 export async function POST(req: Request) {
-  let body: { token?: string; requestId?: string; action?: string; actualQuantity?: number };
+  let body: { token?: string; requestId?: string; action?: string; actualQuantity?: number; etaMinutes?: number };
   try {
     body = await req.json();
   } catch {
@@ -47,6 +47,11 @@ export async function POST(req: Request) {
     if (action === "start") {
       if (!PRE_COLLECT.includes(status)) return NextResponse.json({ error: "지금은 이동 시작을 누를 수 없는 상태예요." }, { status: 409 });
       next = "collecting";
+      // 도착 예정(분): 고객 조회 화면에 "약 ○시 ○분 도착 예정"으로 표시된다
+      const eta = Math.round(Number(body.etaMinutes));
+      if (Number.isFinite(eta) && eta >= 5 && eta <= 240) {
+        await supabase.from("pickup_orders").update({ eta_at: new Date(Date.now() + eta * 60_000).toISOString(), updated_at: new Date().toISOString() }).eq("id", order.id);
+      }
     } else {
       if (![...PRE_COLLECT, "collecting"].includes(status)) return NextResponse.json({ error: "지금은 수거 완료 처리를 할 수 없는 상태예요." }, { status: 409 });
       next = "collected";

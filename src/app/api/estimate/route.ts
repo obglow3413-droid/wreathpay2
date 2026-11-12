@@ -113,7 +113,12 @@ export async function POST(request: Request) {
           ribbon_wanted: ribbonWanted,
           source_ref: sourceRef,
           ref_code: randomBytes(5).toString("hex").slice(0, 7),
-          customer_note: dispatchMode === "fast" ? "빠른 배정 요청(가장 빠른 일정으로 안내 희망)" : null,
+          customer_note:
+            formData.get("reserve") === "1"
+              ? "[사전 예약] 행사 전 미리 신청 · 행사 후 사진과 수량 확인 필요"
+              : dispatchMode === "fast"
+                ? "빠른 배정 요청(가장 빠른 일정으로 안내 희망)"
+                : null,
           ...(hasCoords ? { address_lat: latRaw, address_lng: lngRaw } : {}),
           agreed_disposal_authority: true,
           agreed_site_restriction: true,

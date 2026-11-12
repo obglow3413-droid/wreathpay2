@@ -1,5 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured, isServiceRoleConfigured } from "@/lib/supabase/config";
+import { getAdminUser } from "@/lib/adminAuth";
+import RefPartners from "@/components/admin/RefPartners";
 import PartnerApplicationActions from "@/components/admin/PartnerApplicationActions";
 
 interface PartnerRow {
@@ -45,6 +47,23 @@ const STATUS_STYLE: Record<string, string> = {
   approved: "bg-brand-tint text-brand-dark",
   rejected: "bg-red-50 text-red-600",
 };
+
+async function getRefPartners(): Promise<{ code: string; name: string; kind: string | null; count: number }[]> {
+  if (!isServiceRoleConfigured() || !(await getAdminUser())) return [];
+  try {
+    const svc = await createServiceRoleClient();
+    const { data: ps } = await svc.from("ref_partners").select("code, name, kind").order("created_at", { ascending: false });
+    const out = [];
+    for (const p of ps ?? []) {
+      const { count } = await svc.from("estimate_requests").select("id", { count: "exact", head: true }).eq("source_ref", `ref:${p.code}`);
+      out.push({ code: p.code as string, name: p.name as string, kind: (p.kind as string | null) ?? null, count: count ?? 0 });
+    }
+    return out;
+  } catch (e) {
+    console.error("[ref partners]", e);
+    return [];
+  }
+}
 
 export default async function AdminPartnersPage() {
   const applications = await getPartnerApplications();
@@ -121,6 +140,8 @@ export default async function AdminPartnersPage() {
           </div>
         ))}
       </div>
+
+      <RefPartners partners={await getRefPartners()} />
     </div>
   );
 }

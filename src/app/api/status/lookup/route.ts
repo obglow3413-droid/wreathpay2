@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { RIBBON_PHOTO_BUCKET } from "@/lib/ribbon";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
-import { phoneGate } from "@/lib/phoneVerify";
+import { phoneGate, isTrustedForPhone } from "@/lib/phoneVerify";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     const customerIds = ids.length ? ids : ["00000000-0000-0000-0000-000000000000"];
     const base =
-      "id, request_no, event_type, quantity_range, status, pickup_date, pickup_time_slot, customer_payback_amount, created_at, updated_at, ribbon_wanted, ref_code";
+      "id, request_no, event_type, quantity_range, status, pickup_date, pickup_time_slot, customer_payback_amount, created_at, updated_at, ribbon_wanted, ref_code, place_name, address";
     let rows: Record<string, unknown>[] | null = null;
     // ai_estimate 열은 마이그레이션 적용 후에만 존재 → 실패하면 없이 조회
     const withAi = await supabase.from("estimate_requests").select(`${base}, ai_estimate`).in("customer_id", customerIds).order("created_at", { ascending: false }).limit(10);
@@ -86,18 +86,26 @@ export async function POST(req: Request) {
     } catch {}
 
     // 수거 완료 증빙: 실제 수거 수량·현장 사진(임시 링크 1시간)
-    const proofs = new Map<string, { actualQuantity: number | null; photo: string | null; collectedAt: string | null }>();
+    const proofs = new Map<string, { actualQuantity: number | null; photo: string | null; collectedAt: string | null; reuse: number | null; discard: number | null; confirmed: boolean }>();
+    const etas = new Map<string, string>();
+    try {
+      const movingIds = (rows ?? []).filter((r) => r.status === "collecting").map((r) => r.id as string);
+      if (movingIds.length) {
+        const { data: es } = await supabase.from("pickup_orders").select("estimate_request_id, eta_at").in("estimate_request_id", movingIds);
+        for (const e of es ?? []) if (e.eta_at) etas.set(e.estimate_request_id, e.eta_at as string);
+      }
+    } catch {}
     try {
       const doneIds = (rows ?? []).filter((r) => r.status === "collected" || r.status === "settled").map((r) => r.id as string);
       if (doneIds.length) {
-        const { data: pos } = await supabase.from("pickup_orders").select("estimate_request_id, actual_quantity, completion_photo_path, updated_at").in("estimate_request_id", doneIds);
+        const { data: pos } = await supabase.from("pickup_orders").select("estimate_request_id, actual_quantity, completion_photo_path, updated_at, reuse_count, discard_count, customer_confirmed_at").in("estimate_request_id", doneIds);
         for (const po of pos ?? []) {
           let photo: string | null = null;
           if (po.completion_photo_path) {
             const { data: signed } = await supabase.storage.from(RIBBON_PHOTO_BUCKET).createSignedUrl(po.completion_photo_path, 3600);
             photo = signed?.signedUrl ?? null;
           }
-          proofs.set(po.estimate_request_id, { actualQuantity: po.actual_quantity, photo, collectedAt: po.updated_at });
+          proofs.set(po.estimate_request_id, { actualQuantity: po.actual_quantity, photo, collectedAt: po.updated_at, reuse: po.reuse_count, discard: po.discard_count, confirmed: Boolean(po.customer_confirmed_at) });
         }
       }
     } catch {}
@@ -111,6 +119,7 @@ export async function POST(req: Request) {
       }
     } catch {}
 
+    const trusted = isTrustedForPhone(req, phone) && Boolean(process.env.PAYOUT_ENC_KEY || process.env.VERIFY_SECRET || process.env.CRON_SECRET);
     const items = (rows ?? []).map((r) => {
       const ai = r.ai_estimate as { status?: string; low?: { payback?: number }; high?: { payback?: number } } | null | undefined;
       const aiRange =
@@ -130,6 +139,9 @@ export async function POST(req: Request) {
         ribbonWanted: r.ribbon_wanted === true,
         reviewed: reviewed.has(r.id as string),
         proof: proofs.get(r.id as string) ?? null,
+        etaAt: etas.get(r.id as string) ?? null,
+        // 주소는 "이 번호로 신청했던 기기"(또는 문자 인증을 마친 기기)에만 돌려준다
+        rebook: trusted ? { placeName: (r.place_name as string) ?? "", address: (r.address as string) ?? "" } : null,
         refCode: (r.ref_code as string | null) ?? null,
         updatedAt: r.updated_at,
         ribbon: r.ribbon_wanted === true ? (ribbons.get(r.id as string) ?? null) : null,

@@ -8,6 +8,7 @@ async function loadTrends() {
   const since = new Date(Date.now() - 56 * 86400_000);
   let rows: { created_at: string; status: string; address: string | null; customer_payback_amount: number | null; source_ref: string | null }[] = [];
   let refOwners: { ref_code: string | null; request_no: string }[] = [];
+  let refPartners: { code: string; name: string }[] = [];
   try {
     const supabase = await createClient();
     const { data } = await supabase
@@ -20,6 +21,13 @@ async function loadTrends() {
     if (codes.length) {
       const { data: owners } = await supabase.from("estimate_requests").select("ref_code, request_no").in("ref_code", codes);
       refOwners = owners ?? [];
+      // ref_partners 는 서비스 롤 전용 테이블이라 관리자 세션(RLS)으로는 안 읽힐 수 있다 → 실패해도 무시
+      try {
+        const { createServiceRoleClient } = await import("@/lib/supabase/server");
+        const svc = await createServiceRoleClient();
+        const { data: ps } = await svc.from("ref_partners").select("code, name").in("code", codes);
+        refPartners = ps ?? [];
+      } catch {}
     }
   } catch (e) {
     console.error("[dashboard trends]", e);
@@ -61,6 +69,8 @@ async function loadTrends() {
     .slice(0, 10)
     .map(([k, n]) => {
       if (k.startsWith("place:")) return { label: `장소 · ${places.find((p) => p.slug === k.slice(6))?.name ?? k.slice(6)}`, n };
+      const partner = refPartners.find((p) => p.code === k.slice(4));
+      if (partner) return { label: `제휴 · ${partner.name}`, n };
       const owner = refOwners.find((o) => o.ref_code === k.slice(4));
       return { label: `친구 추천 · ${owner ? `추천인 접수 ${owner.request_no}` : k.slice(4)}`, n };
     });

@@ -29,6 +29,7 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
   const [ribbonCount, setRibbonCount] = useState<Record<string, string>>({});
   const [ribbonFiles, setRibbonFiles] = useState<Record<string, File[]>>({});
   const [proof, setProof] = useState<Record<string, File>>({});
+  const [eta, setEta] = useState<Record<string, string>>({});
 
   async function pickRibbon(id: string, list: FileList | null) {
     if (!list) return;
@@ -81,6 +82,7 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
           requestId: job.id,
           action,
           actualQuantity: qty[job.id] ? Number(qty[job.id]) : undefined,
+          etaMinutes: action === "start" ? Number(eta[job.id] ?? 60) : undefined,
         }),
       });
       const json = await res.json();
@@ -140,14 +142,27 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
               </div>
 
               {!moving ? (
-                <button
-                  type="button"
-                  onClick={() => act(j, "start")}
-                  disabled={busy !== null}
-                  className="mt-4 h-12 w-full rounded-xl bg-brand text-[15px] font-semibold text-white disabled:opacity-50"
-                >
-                  {busy === j.id + "start" ? "처리 중..." : "🚚 이동 시작"}
-                </button>
+                <div className="mt-4 flex gap-2">
+                  <select
+                    value={eta[j.id] ?? "60"}
+                    onChange={(e) => setEta((p) => ({ ...p, [j.id]: e.target.value }))}
+                    className="h-12 shrink-0 rounded-xl border border-border bg-white px-3 text-[13.5px]"
+                    aria-label="도착 예정"
+                  >
+                    <option value="30">30분 뒤 도착</option>
+                    <option value="60">1시간 뒤 도착</option>
+                    <option value="90">1시간 30분 뒤</option>
+                    <option value="120">2시간 뒤 도착</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => act(j, "start")}
+                    disabled={busy !== null}
+                    className="h-12 min-w-0 flex-1 rounded-xl bg-brand text-[15px] font-semibold text-white disabled:opacity-50"
+                  >
+                    {busy === j.id + "start" ? "처리 중..." : "🚚 이동 시작"}
+                  </button>
+                </div>
               ) : null}
 
               {j.ribbonWanted && (
