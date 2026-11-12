@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import BackHeader from "@/components/layout/BackHeader";
 import HowItWorks from "@/components/home/HowItWorks";
 import Faq from "@/components/home/Faq";
+import AppBottomNav from "@/components/layout/AppBottomNav";
 
 export const metadata: Metadata = {
   title: "이용안내",
@@ -16,6 +17,7 @@ export default function GuidePage() {
         <HowItWorks />
         <Faq />
       </main>
+      <AppBottomNav />
     </div>
   );
 }

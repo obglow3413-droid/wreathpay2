@@ -1,5 +1,5 @@
 const TABLE_ROWS = [
-  { qty: "1~4개", funeral: "무료회수 가능 여부 확인", celebration: "무료회수 가능 여부 확인" },
+  { qty: "1~4개", funeral: "무료회수 확인", celebration: "무료회수 확인" },
   { qty: "5~9개", funeral: "1만~3만원", celebration: "무료회수~2만원" },
   { qty: "10~14개", funeral: "4만~7만원", celebration: "2만~4만원" },
   { qty: "15~19개", funeral: "6만~10만원", celebration: "3만~6만원" },
@@ -22,18 +22,18 @@ export default function WreathTypes() {
             <thead className="bg-surface text-muted">
               <tr>
                 <th className="px-4 py-3 font-medium">수량</th>
-                <th className="px-4 py-3 text-right font-medium md:text-left">근조화환</th>
-                <th className="px-4 py-3 text-right font-medium md:text-left">축하·개업화환</th>
+                <th className="whitespace-nowrap px-3 py-3 text-right font-medium md:text-left">근조화환</th>
+                <th className="whitespace-nowrap px-3 py-3 text-right font-medium md:text-left">축하·개업화환</th>
               </tr>
             </thead>
             <tbody>
               {TABLE_ROWS.map((row) => (
                 <tr key={row.qty} className="border-t border-border transition-colors hover:bg-surface/60">
-                  <td className="px-4 py-3.5 font-medium">{row.qty}</td>
-                  <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-brand-dark md:text-left">
+                  <td className="whitespace-nowrap px-4 py-3.5 font-medium">{row.qty}</td>
+                  <td className="whitespace-nowrap px-3 py-3.5 text-right font-semibold tabular-nums text-brand-dark md:text-left">
                     {row.funeral}
                   </td>
-                  <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-brand-dark md:text-left">
+                  <td className="whitespace-nowrap px-3 py-3.5 text-right font-semibold tabular-nums text-brand-dark md:text-left">
                     {row.celebration}
                   </td>
                 </tr>

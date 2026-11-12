@@ -480,3 +480,25 @@ button:disabled { cursor: not-allowed; }
   a.bg-brand::after, button.bg-brand::after { display: none; }
   a.bg-brand:hover, button.bg-brand:hover, a.bg-brand:active, button.bg-brand:active, button:active { transform: none !important; }
 }
+
+
+/* ───────── 폼·비활성 상태 다듬기 ───────── */
+/* 비활성 메인 버튼: 탁한 반투명 대신 또렷한 '아직 누를 수 없음' 상태 */
+button.bg-brand:disabled {
+  opacity: 1 !important;
+  background: var(--sage) !important;
+  color: var(--muted-light) !important;
+  box-shadow: none !important;
+}
+button.bg-brand:disabled::after { display: none; }
+/* 입력창 포커스: 브랜드 컬러 테두리 + 은은한 링 */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  border-color: var(--brass) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brass) 16%, transparent);
+  outline: none !important;
+}
+input::placeholder, textarea::placeholder { color: var(--muted-light); }
+/* 금액·건수는 자릿수 폭 고정 */
+.tabular-nums { font-feature-settings: "tnum"; }

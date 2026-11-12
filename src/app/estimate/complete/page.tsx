@@ -82,13 +82,13 @@ export default async function EstimateCompletePage({
           href="https://d5dpz.channel.io"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover-lift flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-foreground py-3.5 text-[15px] font-semibold text-white"
+          className="flex h-13 w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3.5 text-[15px] font-semibold text-foreground"
         >
-          상담하기
+          채널톡 상담하기
         </a>
         <Link
           href="/"
-          className="flex h-13 items-center justify-center rounded-xl border border-border py-3.5 text-[15px] font-semibold text-foreground"
+          className="flex h-11 items-center justify-center text-[14px] font-medium text-muted underline underline-offset-4"
         >
           홈으로
         </Link>

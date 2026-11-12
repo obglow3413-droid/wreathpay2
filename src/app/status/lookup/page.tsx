@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BackHeader from "@/components/layout/BackHeader";
 import LookupForm from "./LookupForm";
+import AppBottomNav from "@/components/layout/AppBottomNav";
 
 export const metadata: Metadata = {
   title: "진행상황 조회",
@@ -18,6 +19,7 @@ export default function LookupPage() {
         </p>
         <LookupForm />
       </div>
+      <AppBottomNav />
     </div>
   );
 }

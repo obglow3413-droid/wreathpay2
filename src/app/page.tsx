@@ -32,7 +32,7 @@ export default async function HomePage({
   return (
     <ServiceTabProvider>
       <AppTopBar />
-      <main className="flex-1 pb-24">
+      <main className="flex-1">
         <Hero />
         <Reveal>
           <LiveFeed demo={demo === "1"} />
@@ -50,7 +50,9 @@ export default async function HomePage({
           <BulkSection />
         </Reveal>
       </main>
-      <SiteFooter />
+      <div className="bg-white pb-24">
+        <SiteFooter />
+      </div>
       <FloatingPaybackCta />
       <AppBottomNav />
     </ServiceTabProvider>
