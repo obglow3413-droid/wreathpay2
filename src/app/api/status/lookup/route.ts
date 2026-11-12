@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     const { data } = await supabase
       .from("estimate_requests")
       .select(
-        "request_no, event_type, quantity_range, status, pickup_date, pickup_time_slot, customer_payback_amount, created_at, customers(phone)"
+        "id, request_no, event_type, quantity_range, status, pickup_date, pickup_time_slot, customer_payback_amount, created_at, customers(phone)"
       )
       .ilike("request_no", requestNo)
       .maybeSingle();
@@ -77,9 +77,23 @@ export async function POST(req: Request) {
       aiRange = null;
     }
 
+    // 등록된 페이백 계좌(은행·끝 4자리만)
+    let account: { bankName: string; last4: string } | null = null;
+    try {
+      const { data: acc } = await supabase
+        .from("payout_accounts")
+        .select("bank_name, account_last4")
+        .eq("estimate_request_id", data.id)
+        .maybeSingle();
+      if (acc) account = { bankName: acc.bank_name, last4: acc.account_last4 };
+    } catch {
+      account = null;
+    }
+
     // 개인정보(이름·연락처·주소)는 돌려주지 않음
     return NextResponse.json({
       aiRange,
+      account,
       requestNo: data.request_no,
       eventType: data.event_type,
       quantityRange: data.quantity_range,

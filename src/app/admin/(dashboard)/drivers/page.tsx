@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { isServiceRoleConfigured, isSupabaseConfigured } from "@/lib/supabase/config";
+import CopyButton from "@/components/status/CopyButton";
 import DriverApplicationActions from "@/components/admin/DriverApplicationActions";
 
 interface ApplicationRow {
@@ -32,6 +33,22 @@ async function getApplications(): Promise<ApplicationRow[]> {
   }
 }
 
+async function getDriverLinks(): Promise<{ id: string; name: string; phone: string; access_token: string }[]> {
+  if (!isServiceRoleConfigured()) return [];
+  try {
+    const session = await createClient();
+    const {
+      data: { user },
+    } = await session.auth.getUser();
+    if (!user) return [];
+    const svc = await createServiceRoleClient();
+    const { data } = await svc.from("drivers").select("id, name, phone, access_token").eq("is_active", true).order("created_at");
+    return (data ?? []) as { id: string; name: string; phone: string; access_token: string }[];
+  } catch {
+    return [];
+  }
+}
+
 const STATUS_LABEL: Record<string, string> = {
   pending: "대기중",
   approved: "승인됨",
@@ -46,6 +63,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 export default async function AdminDriversPage() {
   const applications = await getApplications();
+  const driverLinks = await getDriverLinks();
   const configured = isSupabaseConfigured();
 
   return (
@@ -57,6 +75,27 @@ export default async function AdminDriversPage() {
       <p className="mt-1 text-[13.5px] text-muted">
         승인하면 배차 가능한 기사 목록에 자동으로 등록돼요.
       </p>
+
+      <section className="mt-6 rounded-xl border border-border bg-white p-5">
+        <h2 className="text-[15px] font-bold">배차 기사 전용 링크</h2>
+        <p className="mt-1 text-[12.5px] text-muted">
+          기사님께 이 링크를 보내주세요. 로그인 없이 본인에게 배정된 건만 보이고, &ldquo;이동 시작 / 수거 완료&rdquo;를 누를 수 있어요. 링크는 타인에게 공유하지 않도록 안내해 주세요.
+        </p>
+        {driverLinks.length === 0 ? (
+          <p className="mt-3 text-[13px] text-muted">등록된 기사가 없어요. 지원서를 승인하면 여기에 나타나요.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-border">
+            {driverLinks.map((d) => (
+              <li key={d.id} className="flex items-center justify-between gap-3 py-2.5 text-[13px]">
+                <span className="font-medium">
+                  {d.name} <span className="text-muted">{d.phone}</span>
+                </span>
+                <CopyButton text={`https://kkotpay.kr/driver/${d.access_token}`} label="링크 복사" />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {!configured && (
         <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-[13.5px] text-amber-700">

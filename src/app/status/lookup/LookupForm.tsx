@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import AccountForm from "@/components/status/AccountForm";
 import NotifyButton from "@/components/status/NotifyButton";
 import StatusBadge from "@/components/admin/StatusBadge";
 import StatusTimeline from "@/components/status/StatusTimeline";
@@ -22,6 +23,7 @@ interface LookupResult {
   pickupTimeSlot: string;
   paybackAmount: number;
   aiRange: { low: number; high: number } | null;
+  account: { bankName: string; last4: string } | null;
   createdAt: string;
 }
 
@@ -175,7 +177,13 @@ export default function LookupForm({ initialRequestNo }: { initialRequestNo: str
           )}
 
           {active && (
-            <div className="mt-5">
+            <div className="mt-4">
+              <AccountForm key={result.requestNo} requestNo={result.requestNo} phone={lookedPhone} initial={result.account} />
+            </div>
+          )}
+
+          {active && (
+            <div className="mt-3">
               <NotifyButton requestNo={result.requestNo} phone={lookedPhone} />
             </div>
           )}
