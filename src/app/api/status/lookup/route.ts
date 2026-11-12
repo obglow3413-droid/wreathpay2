@@ -2,31 +2,14 @@ import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { RIBBON_PHOTO_BUCKET } from "@/lib/ribbon";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
+import { phoneGate } from "@/lib/phoneVerify";
 
 export const dynamic = "force-dynamic";
-
-// 연락처 대입 조회를 늦추기 위한 단순 요청 제한(인스턴스 단위, best-effort)
-const hits = new Map<string, number[]>();
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_HITS = 20;
-
-function limited(ip: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  return recent.length > MAX_HITS;
-}
 
 const digits = (v: string) => v.replace(/\D/g, "");
 
 /** 연락처만으로 본인 접수 내역 조회(최근 10건). 이름·주소·접수번호는 돌려주지 않는다. */
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (limited(ip)) {
-    return NextResponse.json({ error: "조회가 너무 잦아요. 잠시 후 다시 시도해주세요." }, { status: 429 });
-  }
-
   let body: { phone?: string };
   try {
     body = await req.json();
@@ -41,6 +24,8 @@ export async function POST(req: Request) {
   if (!isServiceRoleConfigured()) {
     return NextResponse.json({ error: "조회 기능을 준비 중이에요." }, { status: 503 });
   }
+  const gate = await phoneGate(req, phone, "lookup", 20);
+  if (gate) return gate;
 
   try {
     const supabase = await createServiceRoleClient();

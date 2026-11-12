@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { getAdminUser } from "@/lib/adminAuth";
 import { RIBBON_PHOTO_BUCKET } from "@/lib/ribbon";
 
 export const dynamic = "force-dynamic";
 
 async function authed() {
-  const s = await createClient();
-  const {
-    data: { user },
-  } = await s.auth.getUser();
-  return Boolean(user);
+  return Boolean(await getAdminUser());
 }
 
 /** 관리자: 리본 사진(임시 링크)과 현재 추출 결과 조회 */

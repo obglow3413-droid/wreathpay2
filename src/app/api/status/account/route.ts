@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { phoneGate } from "@/lib/phoneVerify";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { BANKS, encryptAccount, isAccountStorageConfigured } from "@/lib/payoutAccount";
@@ -34,6 +35,10 @@ export async function POST(req: Request) {
   const account = digits(body.accountNumber ?? "");
 
   if (!requestNo || phone.length < 9) return NextResponse.json({ error: "접수번호와 연락처를 확인해주세요." }, { status: 400 });
+  {
+    const gate = await phoneGate(req, phone, "account", 6);
+    if (gate) return gate;
+  }
   if (!(BANKS as readonly string[]).includes(bankName)) return NextResponse.json({ error: "은행을 선택해주세요." }, { status: 400 });
   if (holderName.length < 2 || holderName.length > 20) return NextResponse.json({ error: "예금주 이름을 확인해주세요." }, { status: 400 });
   if (account.length < 8 || account.length > 16) return NextResponse.json({ error: "계좌번호를 확인해주세요. (숫자만 8~16자리)" }, { status: 400 });

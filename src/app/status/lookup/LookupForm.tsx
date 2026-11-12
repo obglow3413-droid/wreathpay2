@@ -54,8 +54,40 @@ export default function LookupForm() {
       body: JSON.stringify({ phone: ph }),
     });
     const json = await res.json();
-    return { ok: res.ok, json };
+    return { ok: res.ok, status: res.status, json };
   }, []);
+
+  // 문자 본인확인(서버에서 인증이 켜져 있을 때만 요구됨)
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  async function requestOtp(ph: string) {
+    const res = await fetch("/api/status/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: ph }) });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) setError(j.error ?? "인증번호를 보내지 못했어요.");
+    else {
+      setOtpStep(true);
+      setError(null);
+    }
+  }
+  async function submitOtp() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/status/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, code: otpCode }) });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(j.error ?? "인증에 실패했어요.");
+        return;
+      }
+      setOtpStep(false);
+      setOtpCode("");
+      await runLookup();
+    } catch {
+      setError("네트워크 오류가 발생했어요. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // 진행 중인 건이 있으면 20초마다 자동 갱신(관리자·기사님이 상태를 바꾸면 화면에 바로 반영)
   const hasActive = items?.some((i) => i.status !== "settled" && i.status !== "cancelled") ?? false;
@@ -77,12 +109,17 @@ export default function LookupForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    await runLookup();
+  }
+
+  async function runLookup() {
     setLoading(true);
     setError(null);
     setItems(null);
     try {
-      const { ok, json } = await fetchItems(phone);
-      if (!ok) setError(json.error ?? "조회에 실패했어요.");
+      const { ok, status, json } = await fetchItems(phone);
+      if (!ok && status === 401 && json.otpRequired) await requestOtp(phone);
+      else if (!ok) setError(json.error ?? "조회에 실패했어요.");
       else {
         phoneRef.current = phone;
         setLookedPhone(phone);
@@ -119,6 +156,27 @@ export default function LookupForm() {
           {loading ? "조회 중..." : "조회하기"}
         </button>
       </form>
+
+      {otpStep && (
+        <div className="mt-4 rounded-xl border border-border bg-white p-4">
+          <p className="text-[14px] font-bold">문자로 받은 인증번호를 입력해 주세요</p>
+          <p className="mt-1 text-[12.5px] text-muted">접수하신 번호로 6자리 인증번호를 보냈어요. (5분 이내 입력)</p>
+          <input
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="인증번호 6자리"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            className={`${inputClass} mt-3 tracking-[0.3em]`}
+          />
+          <button type="button" disabled={loading || otpCode.length !== 6} onClick={submitOtp} className="mt-3 h-12 w-full rounded-xl bg-brand text-[15px] font-semibold text-white disabled:opacity-40">
+            {loading ? "확인 중..." : "인증하고 조회하기"}
+          </button>
+          <button type="button" onClick={() => requestOtp(phone)} className="mt-2 w-full text-[12.5px] text-muted underline">
+            인증번호 다시 받기
+          </button>
+        </div>
+      )}
 
       {error && <p className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-[13px] text-red-600">{error}</p>}
 

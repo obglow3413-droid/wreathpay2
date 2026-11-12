@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
+import { getAdminUser } from "@/lib/adminAuth";
 
 interface MemberRow {
   id: string;
@@ -11,6 +12,7 @@ interface MemberRow {
 
 async function getMembers(): Promise<MemberRow[]> {
   if (!isServiceRoleConfigured()) return [];
+  if (!(await getAdminUser())) return [];
 
   try {
     const supabase = await createServiceRoleClient();

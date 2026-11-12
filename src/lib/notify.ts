@@ -30,7 +30,7 @@ function message(status: string, requestNo: string, pickupDate: string | null): 
   }
 }
 
-async function sendSms(to: string, text: string): Promise<boolean> {
+export async function sendSms(to: string, text: string): Promise<boolean> {
   const date = new Date().toISOString();
   const salt = crypto.randomBytes(16).toString("hex");
   const signature = crypto.createHmac("sha256", process.env.SOLAPI_API_SECRET!).update(date + salt).digest("hex");

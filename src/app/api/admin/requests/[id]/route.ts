@@ -1,4 +1,5 @@
 
+import { isAdminUser, auditLog } from "@/lib/adminAuth";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { notifyStatusChange } from "@/lib/notify";
@@ -21,7 +22,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) {
+    if (!user || !(await isAdminUser(user.id))) {
       return NextResponse.json({ error: "인증이 필요해요." }, { status: 401 });
     }
 
@@ -166,6 +167,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     }
 
     if (body.status) await notifyStatusChange(id, String(body.status));
+    if (body.status) await auditLog(user.id, `request.status.${String(body.status)}`, id);
 
     return NextResponse.json({ ok: true, pricing });
   } catch (err) {
@@ -188,9 +190,10 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) {
+    if (!user || !(await isAdminUser(user.id))) {
       return NextResponse.json({ error: "인증이 필요해요." }, { status: 401 });
     }
+    await auditLog(user.id, "request.delete", id);
 
     // 업로드된 사진 파일도 Storage에서 함께 정리
     const { data: images } = await supabase

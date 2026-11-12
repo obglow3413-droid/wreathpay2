@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp, rateLimitedShared } from "@/lib/rateLimit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { generateRequestNo } from "@/lib/pricing";
 import { notifyAdmin } from "@/lib/notify";
@@ -16,6 +17,10 @@ export const maxDuration = 60;
  * Mock 모드로 동작하여, 실제 저장 없이 신청번호만 발급합니다. (개발/데모용)
  */
 export async function POST(request: Request) {
+  // 접수 남용(도배) 방지: IP당 10분에 8건
+  if (await rateLimitedShared(`est:${clientIp(request)}`, 8, 600)) {
+    return NextResponse.json({ error: "요청이 너무 잦아요. 잠시 후 다시 시도해주세요." }, { status: 429 });
+  }
   try {
     const formData = await request.formData();
 
@@ -130,13 +135,16 @@ export async function POST(request: Request) {
     for (let i = 0; i < images.length; i++) {
       const file = images[i];
       const arrayBuffer = await file.arrayBuffer();
-      const ext = file.name.split(".").pop() || "jpg";
+      // 이미지 외 파일·과대 파일은 저장하지 않는다. 확장자는 파일명이 아니라 MIME 기준으로 고정.
+      const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/heic": "heic", "image/heif": "heif" };
+      const ext = EXT[file.type];
+      if (!ext || file.size > 8 * 1024 * 1024) continue;
       const path = `${estimateRequest.id}/${i}-${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("estimate-photos")
         .upload(path, Buffer.from(arrayBuffer), {
-          contentType: file.type || "image/jpeg",
+          contentType: file.type,
         });
 
       if (!uploadError) {

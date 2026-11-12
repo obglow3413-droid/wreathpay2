@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import { clientIp, rateLimitedShared } from "@/lib/rateLimit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 
 export async function POST(request: Request) {
+  if (await rateLimitedShared(`papply:${clientIp(request)}`, 5, 600)) {
+    return NextResponse.json({ error: "요청이 너무 잦아요. 잠시 후 다시 시도해주세요." }, { status: 429 });
+  }
   try {
     const body = await request.json();
     const { category, companyName, applicantName, email, phone, website, serviceRegions, memo } = body;

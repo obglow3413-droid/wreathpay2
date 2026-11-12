@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { phoneGate } from "@/lib/phoneVerify";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { clientIp, rateLimited } from "@/lib/rateLimit";
@@ -21,6 +22,10 @@ export async function POST(req: Request) {
   const text = String(b.body ?? "").trim();
   if (!requestNo || phone.length < 10 || !(rating >= 1 && rating <= 5) || text.length < 5 || text.length > 400 || !isServiceRoleConfigured())
     return NextResponse.json({ error: "별점과 5자 이상의 후기를 입력해 주세요." }, { status: 400 });
+  {
+    const gate = await phoneGate(req, phone, "review", 5);
+    if (gate) return gate;
+  }
   try {
     const supabase = await createServiceRoleClient();
     const { data } = await supabase

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { isAdminUser } from "@/lib/adminAuth";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -9,7 +10,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const {
       data: { user },
     } = await sessionClient.auth.getUser();
-    if (!user) {
+    if (!user || !(await isAdminUser(user.id))) {
       return NextResponse.json({ error: "인증이 필요해요." }, { status: 401 });
     }
 

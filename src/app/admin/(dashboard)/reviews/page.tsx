@@ -1,5 +1,6 @@
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured, isSupabaseConfigured } from "@/lib/supabase/config";
+import { isAdminUser } from "@/lib/adminAuth";
 import ReviewActions from "@/components/admin/ReviewActions";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,7 @@ export default async function ReviewsAdminPage() {
       const {
         data: { user },
       } = await s.auth.getUser();
-      if (user) {
+      if (user && (await isAdminUser(user.id))) {
         const svc = await createServiceRoleClient();
         const { data } = await svc.from("reviews").select("id, rating, body, region, approved, created_at").order("created_at", { ascending: false }).limit(100);
         rows = data ?? [];

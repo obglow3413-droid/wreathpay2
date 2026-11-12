@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       if (!f.type.startsWith("image/") || f.size > 5 * 1024 * 1024) continue;
       const path = `ribbon/${requestId}/${Date.now()}-${i}.jpg`;
       const { error } = await supabase.storage.from(RIBBON_PHOTO_BUCKET).upload(path, Buffer.from(await f.arrayBuffer()), {
-        contentType: f.type || "image/jpeg",
+        contentType: "image/jpeg",
       });
       if (!error) added.push(path);
     }

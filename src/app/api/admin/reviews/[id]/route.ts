@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { getAdminUser } from "@/lib/adminAuth";
 
 export const dynamic = "force-dynamic";
 
 async function authed() {
-  const s = await createClient();
-  const {
-    data: { user },
-  } = await s.auth.getUser();
-  return Boolean(user);
+  return Boolean(await getAdminUser());
 }
 
 /** 관리자: 후기 노출 승인/해제 */

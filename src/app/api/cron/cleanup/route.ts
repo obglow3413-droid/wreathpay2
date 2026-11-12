@@ -32,5 +32,8 @@ export async function GET(req: Request) {
     await supabase.from("pickup_orders").update({ ribbon_photo_paths: [], ribbon_extract: null, ribbon_extract_status: "none" }).eq("id", po.id);
     photos += paths.length;
   }
+  // 요청 제한 카운터·만료된 인증번호 정리
+  await supabase.from("rate_limits").delete().lt("window_start", new Date(now.getTime() - 24 * 3600 * 1000).toISOString());
+  await supabase.from("otp_codes").delete().lt("expires_at", now.toISOString());
   return NextResponse.json({ ok: true, boardsDeleted: boards?.length ?? 0, photosDeleted: photos });
 }

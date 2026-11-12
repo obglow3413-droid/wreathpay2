@@ -1,3 +1,4 @@
+import { isAdminUser } from "@/lib/adminAuth";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured, isSupabaseConfigured } from "@/lib/supabase/config";
 import CopyButton from "@/components/status/CopyButton";
@@ -40,7 +41,7 @@ async function getDriverLinks(): Promise<{ id: string; name: string; phone: stri
     const {
       data: { user },
     } = await session.auth.getUser();
-    if (!user) return [];
+    if (!user || !(await isAdminUser(user.id))) return [];
     const svc = await createServiceRoleClient();
     const { data } = await svc.from("drivers").select("id, name, phone, access_token").eq("is_active", true).order("created_at");
     return (data ?? []) as { id: string; name: string; phone: string; access_token: string }[];

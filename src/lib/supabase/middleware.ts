@@ -37,10 +37,27 @@ export async function updateSession(request: NextRequest) {
   // 서버가 아직 로그인 상태를 못 볼 수 있어, 로그인 페이지처럼 예외로 둡니다.
   const isResetPasswordPage = pathname === "/admin/reset-password";
 
-  if (pathname.startsWith("/admin") && !isLoginPage && !isResetPasswordPage && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
+  const isAdminApi = pathname.startsWith("/api/admin");
+  const isProtectedPage = pathname.startsWith("/admin") && !isLoginPage && !isResetPasswordPage;
+
+  if (isProtectedPage || isAdminApi) {
+    // 로그인만으로는 부족하다. 일반 회원가입이 열려 있으므로 admin_users 등록 계정만 통과시킨다.
+    let admin = false;
+    if (user) {
+      try {
+        const { data } = await supabase.rpc("is_admin");
+        admin = data === true;
+      } catch {
+        admin = false;
+      }
+    }
+    if (!admin) {
+      if (isAdminApi) return NextResponse.json({ error: "인증이 필요해요." }, { status: 401 });
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      if (user) url.searchParams.set("denied", "1");
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

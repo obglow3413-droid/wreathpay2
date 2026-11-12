@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { phoneGate } from "@/lib/phoneVerify";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { clientIp, rateLimited } from "@/lib/rateLimit";
@@ -18,6 +19,10 @@ export async function POST(req: Request) {
   const requestNo = (body.requestNo ?? "").trim().toUpperCase();
   const phone = digits(body.phone ?? "");
   if (!requestNo || phone.length < 10 || !isServiceRoleConfigured()) return NextResponse.json({ error: "잘못된 요청입니다." }, { status: 400 });
+  {
+    const gate = await phoneGate(req, phone, "ribbonreq", 10);
+    if (gate) return gate;
+  }
   try {
     const supabase = await createServiceRoleClient();
     const { data } = await supabase.from("estimate_requests").select("id, status, customers(phone)").ilike("request_no", requestNo).maybeSingle();
