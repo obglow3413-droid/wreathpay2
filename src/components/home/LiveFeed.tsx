@@ -3,7 +3,7 @@ import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { EVENT_TYPE_LABEL, QUANTITY_RANGE_LABEL, type EventType, type QuantityRange } from "@/lib/types";
 import CountUpNumber from "./CountUpNumber";
 import CountUpAmount from "./CountUpAmount";
-import { MANUAL_WEEK_STATS } from "@/lib/homeStats";
+import { MANUAL_WEEK_STATS, SIMULATED_RETURNED, getSimulatedReturnedAmount } from "@/lib/homeStats";
 import LiveTicker, { type TickerItem } from "./LiveTicker";
 
 interface FeedData {
@@ -135,8 +135,13 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
   const { items, todayCount, returnedCount } = feed;
   const weekCount = demo ? feed.weekCount : Math.max(feed.weekCount, MANUAL_WEEK_STATS.weekCount);
   // 운영자가 확인한 최근 7일 실적이 설정돼 있으면 DB 누적값 대신 그 값을 그대로 표시
-  const manualAmount = !demo && MANUAL_WEEK_STATS.returnedAmount > 0;
-  const returnedAmount = manualAmount ? MANUAL_WEEK_STATS.returnedAmount : feed.returnedAmount;
+  const simulated = !demo && SIMULATED_RETURNED.enabled;
+  const manualAmount = !demo && (simulated || MANUAL_WEEK_STATS.returnedAmount > 0);
+  const returnedAmount = simulated
+    ? getSimulatedReturnedAmount()
+    : manualAmount
+      ? MANUAL_WEEK_STATS.returnedAmount
+      : feed.returnedAmount;
 
   return (
     <section className="border-t border-line bg-ivory">
@@ -190,7 +195,11 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
               )}
             </div>
             <p className="mt-3 text-[12px] text-muted-light">
-              {demo ? "시연용 샘플 숫자입니다. 실제 서비스 화면에는 표시되지 않아요." : "개인정보는 표시하지 않아요."}
+              {demo
+                ? "시연용 샘플 숫자입니다. 실제 서비스 화면에는 표시되지 않아요."
+                : simulated
+                  ? "※ 시범 운영 중 예시 수치이며 실제 정산 금액이 아닙니다. 개인정보는 표시하지 않아요."
+                  : "개인정보는 표시하지 않아요."}
             </p>
           </div>
 
