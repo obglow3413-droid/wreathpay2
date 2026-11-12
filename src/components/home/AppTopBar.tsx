@@ -6,7 +6,7 @@ import { MessageCircle } from "lucide-react";
 
 export default function AppTopBar() {
   return (
-    <header className="flex h-14 items-center justify-between bg-ivory px-5">
+    <header className="flex h-14 items-center justify-between px-5">
       <Logo />
       <div className="flex items-center gap-1">
         <a

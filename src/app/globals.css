@@ -38,65 +38,70 @@
  * var() 참조는 정의된 요소에서 계산되므로 파생 토큰도 테마 안에서 다시 정의한다.
  */
 [data-theme="celebration"] {
-  --ink: #111513;
-  --forest: #17201c;
-  --ivory: #ffffff;
-  --paper: #f6f6f3;
-  --brass: #a8863f;
-  --sage: #e2e4de;
-  --text: #161a18;
-  --muted-tone: #6b716d;
-  --line: #e7e8e3;
-  --background: #ffffff;
-  --foreground: #161a18;
-  --muted: #6b716d;
-  --muted-light: #9aa09b;
-  --border: #e7e8e3;
-  --surface: #f6f6f3;
-  --white: #ffffff;
-  --brand: #17201c;
-  --brand-dark: #0d110f;
-  --brand-tint: #eef0ea;
-  --inverse-bg: #f1f2ee;
-  --inverse-fg: #161a18;
+  --ink: #141211;
+  --forest: #1a1715;
+  --ivory: #ece8e3;
+  --paper: #f7f4f0;
+  --brass: #d9502a;
+  --sage: #ddd7cf;
+  --text: #171412;
+  --muted-tone: #6f6860;
+  --line: #ddd7cf;
+  --background: #ece8e3;
+  --foreground: #171412;
+  --muted: #6f6860;
+  --muted-light: #9b948b;
+  --border: #ddd7cf;
+  --surface: #f7f4f0;
+  --white: #f7f4f0;
+  --brand: #1a1715;
+  --brand-dark: #0d0b0a;
+  --brand-tint: #f3e3da;
+  --inverse-bg: #e4ded7;
+  --inverse-fg: #171412;
+  --glow: radial-gradient(closest-side, rgba(244, 138, 108, 0.55), rgba(244, 138, 108, 0));
 }
 
 [data-theme="funeral"] {
   --ink: #000000;
-  --forest: #ecebe6;
-  --ivory: #0b0b0c;
-  --paper: #141416;
-  --brass: #b8b2a2;
-  --sage: #34343a;
-  --text: #ecebe6;
-  --muted-tone: #9a9a96;
-  --line: #2a2a2e;
-  --background: #0b0b0c;
-  --foreground: #ecebe6;
-  --muted: #9a9a96;
-  --muted-light: #75757a;
-  --border: #2a2a2e;
-  --surface: #141416;
-  --white: #141416;
-  --brand: #ecebe6;
+  --forest: #f1eeea;
+  --ivory: #0a0a0a;
+  --paper: #131211;
+  --brass: #ef6a45;
+  --sage: #34302d;
+  --text: #f1eeea;
+  --muted-tone: #9d9892;
+  --line: #2a2725;
+  --background: #0a0a0a;
+  --foreground: #f1eeea;
+  --muted: #9d9892;
+  --muted-light: #77726c;
+  --border: #2a2725;
+  --surface: #131211;
+  --white: #131211;
+  --brand: #f1eeea;
   --brand-dark: #ffffff;
-  --brand-tint: #1d1d20;
-  --inverse-bg: #18181b;
-  --inverse-fg: #ecebe6;
+  --brand-tint: #1e1a18;
+  --inverse-bg: #181615;
+  --inverse-fg: #f1eeea;
+  --glow: radial-gradient(closest-side, rgba(200, 62, 54, 0.62), rgba(200, 62, 54, 0));
 }
 
 [data-theme] {
-  background: var(--background);
+  /* 우측 상단에 번지는 블러 글로우 (인스타 카드 톤) */
+  background:
+    var(--glow) no-repeat calc(100% + 18vmax) -14vmax / 64vmax 64vmax,
+    var(--background);
   color: var(--foreground);
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 /* 근조 테마일 때 오버스크롤 영역까지 검정으로 */
 html:has([data-theme="funeral"]) body {
-  background: #0b0b0c;
+  background: #0a0a0a;
 }
 html:has([data-theme="celebration"]) body {
-  background: #ffffff;
+  background: #ece8e3;
 }
 
 @theme inline {

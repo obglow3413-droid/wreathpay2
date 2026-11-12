@@ -21,7 +21,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="bg-ivory">
+    <section>
       <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-8 md:py-16">
         {/* 상단 탭: 개업·축하화환 / 근조화환 (선택 시 테마 전체가 전환됨) */}
         <div
