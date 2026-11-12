@@ -25,3 +25,9 @@ alter table ribbon_messages enable row level security;
 alter table pickup_orders add column if not exists ribbon_count int;
 alter table pickup_orders add column if not exists ribbon_photo_paths text[] not null default '{}';
 alter table estimate_requests add column if not exists ribbon_wanted boolean not null default true;
+
+-- 리본 명단 정리 서비스: 리본을 안 챙기는 고객이 신청 → 기사 사진 → AI 추출 → 검수 → 고객에게 명단 제공
+alter table estimate_requests alter column ribbon_wanted set default false;
+update estimate_requests set ribbon_wanted = false;
+alter table pickup_orders add column if not exists ribbon_extract jsonb;
+alter table pickup_orders add column if not exists ribbon_extract_status text not null default 'none';

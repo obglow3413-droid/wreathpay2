@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
+import { filesToAiImages } from "@/lib/aiEstimate";
+import { extractRibbons, type RibbonItem } from "@/lib/ribbonExtract";
 import { RIBBON_PHOTO_BUCKET } from "@/lib/ribbon";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /** 기사 전용: 수거한 리본 개수 + 리본 사진 업로드(고객에게 돌려줄 자료). 본인에게 배정된 건만. */
 export async function POST(req: Request) {
@@ -45,7 +48,32 @@ export async function POST(req: Request) {
     const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (Number.isFinite(countRaw) && countRaw >= 0 && countRaw <= 500) update.ribbon_count = countRaw;
     if (added.length) update.ribbon_photo_paths = [...existing, ...added];
+
     await supabase.from("pickup_orders").update(update).eq("id", order.id);
+
+    // AI로 리본 문구 추출 → 기존 목록에 이어 붙임(검수 전 상태 'ai'). best-effort:
+    // ribbon_extract 열(supabase/migration_digital_ribbon.sql)이 아직 없거나 키가 없으면 사진만 저장하고 넘어간다.
+    if (added.length) {
+      try {
+        const { data: cur, error: curErr } = await supabase
+          .from("pickup_orders")
+          .select("ribbon_extract, ribbon_extract_status")
+          .eq("id", order.id)
+          .maybeSingle();
+        if (!curErr && cur && cur.ribbon_extract_status !== "confirmed") {
+          const items = await extractRibbons(await filesToAiImages(files));
+          if (items) {
+            const prev = ((cur.ribbon_extract as { items?: RibbonItem[] } | null)?.items ?? []) as RibbonItem[];
+            await supabase
+              .from("pickup_orders")
+              .update({ ribbon_extract: { items: [...prev, ...items], at: new Date().toISOString() }, ribbon_extract_status: "ai" })
+              .eq("id", order.id);
+          }
+        }
+      } catch (e) {
+        console.error("[driver ribbon extract]", e);
+      }
+    }
 
     return NextResponse.json({ ok: true, uploaded: added.length });
   } catch (e) {

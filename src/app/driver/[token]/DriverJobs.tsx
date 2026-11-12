@@ -41,16 +41,22 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
     try {
       // 수거 완료 전에 리본 개수·사진을 먼저 저장(고객에게 돌려줄 자료)
       if (action === "complete" && job.ribbonWanted) {
-        const fd = new FormData();
-        fd.append("token", token);
-        fd.append("requestId", job.id);
-        if (ribbonCount[job.id]) fd.append("count", ribbonCount[job.id]);
-        (ribbonFiles[job.id] ?? []).forEach((f) => fd.append("files", f));
-        const rr = await fetch("/api/driver/ribbon", { method: "POST", body: fd });
-        if (!rr.ok) {
-          setError((await rr.json().catch(() => ({}))).error ?? "리본 정보를 저장하지 못했어요.");
-          setBusy(null);
-          return;
+        const files = ribbonFiles[job.id] ?? [];
+        // Vercel 요청 크기 제한을 피하려고 3장씩 나눠 올린다(서버가 장마다 AI로 문구를 읽어 이어 붙임)
+        const chunks: File[][] = files.length ? [] : [[]];
+        for (let i = 0; i < files.length; i += 3) chunks.push(files.slice(i, i + 3));
+        for (let ci = 0; ci < chunks.length; ci++) {
+          const fd = new FormData();
+          fd.append("token", token);
+          fd.append("requestId", job.id);
+          if (ci === 0 && ribbonCount[job.id]) fd.append("count", ribbonCount[job.id]);
+          chunks[ci].forEach((f) => fd.append("files", f));
+          const rr = await fetch("/api/driver/ribbon", { method: "POST", body: fd });
+          if (!rr.ok) {
+            setError((await rr.json().catch(() => ({}))).error ?? "리본 정보를 저장하지 못했어요.");
+            setBusy(null);
+            return;
+          }
         }
       }
       const res = await fetch("/api/driver/action", {
@@ -132,8 +138,8 @@ export default function DriverJobs({ token, driverName, jobs }: { token: string;
 
               {j.ribbonWanted && (
                 <div className="mt-4 rounded-xl border border-border bg-surface p-3.5">
-                  <p className="text-[13px] font-bold">🎗 리본 챙기기 (고객이 돌려받기 원해요)</p>
-                  <p className="mt-0.5 text-[11.5px] text-muted">리본을 떼어 봉투에 모으고, 문구가 읽히게 사진을 찍어주세요.</p>
+                  <p className="text-[13px] font-bold">🎗 리본 명단 정리 (고객이 신청했어요)</p>
+                  <p className="mt-0.5 text-[11.5px] text-muted">리본마다 글씨가 선명하게 읽히도록 가까이 찍어주세요. (한 장에 여러 개 가능, 최대 8장) 사진을 보고 업체명·문구를 자동 정리해요.</p>
                   <div className="mt-2 flex gap-2">
                     <input
                       type="number"
