@@ -5,5 +5,5 @@
  */
 export const MANUAL_WEEK_STATS = {
   weekCount: 67,
-  returnedAmount: 1_327_800,
+  returnedAmount: 13_278_000,
 };
