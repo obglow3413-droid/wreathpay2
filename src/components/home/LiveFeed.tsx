@@ -166,7 +166,6 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
                 <div className="col-span-2 rounded-2xl border border-line bg-paper px-4 py-4">
                   <p className="text-[12px] text-muted">{manualAmount ? "최근 7일간 돌려드린 금액" : "지금까지 돌려드린 금액"}</p>
                   <p className="mt-1 text-[28px] font-extrabold leading-none">
-                    {manualAmount && <span className="mr-1 text-[15px] font-bold text-muted">약</span>}
                     <CountUpAmount amount={returnedAmount} />
                   </p>
                   <p className="mt-1.5 text-[11.5px] text-muted-light">{manualAmount ? "최근 7일 기준" : `수거 완료 ${returnedCount}건 기준`}</p>
