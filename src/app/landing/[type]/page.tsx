@@ -65,6 +65,16 @@ export default async function AdLandingPage({
               종류·상태·수량에 따라 매입가가 달라집니다. 사진을 등록하면 예상 견적을 바로
               안내드려요.
             </p>
+            {type === "wedding" && (
+              <div className="mt-5 space-y-2.5">
+                <Link href="/wedding-checklist" className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 text-[14px] font-bold">
+                  웨딩홀 계약 전 화환 체크리스트 7가지 <span aria-hidden>→</span>
+                </Link>
+                <Link href="/reserve" className="flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 text-[14px] font-bold">
+                  예식 날짜에 맞춰 수거 미리 예약하기 <span aria-hidden>→</span>
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       </main>

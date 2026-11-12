@@ -4,8 +4,9 @@ import { notFound } from "next/navigation";
 import { MapPin, ChevronRight } from "lucide-react";
 import BackHeader from "@/components/layout/BackHeader";
 import { PLACE_KIND_LABEL, getAllPlaces, getPlace } from "@/lib/places";
+import NearbyToday from "@/components/home/NearbyToday";
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -70,6 +71,14 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
           <ChevronRight size={18} />
         </Link>
         <p className="mt-2 text-center text-[12px] text-muted-light">수거비 0원 · 가입 없이 신청 · 주소가 자동으로 채워져요</p>
+
+        <NearbyToday only={{ sido: place.sido, sigungu: place.sigungu }} />
+        {place.kind === "wedding" && (
+          <Link href="/wedding-checklist" className="mt-4 flex items-center justify-between rounded-xl border border-border bg-white px-4 py-3.5 text-[13.5px] font-semibold">
+            웨딩홀 계약 전 화환 체크리스트 7가지
+            <ChevronRight size={16} className="text-muted-light" />
+          </Link>
+        )}
 
         <section className="mt-8 rounded-2xl border border-border bg-white p-5">
           <h2 className="text-[15px] font-bold">이렇게 진행돼요</h2>

@@ -33,6 +33,9 @@ export default function SiteFooter() {
           <Link href="/guide" className="underline hover:text-muted">
             이용안내
           </Link>
+          <Link href="/wedding-checklist" className="underline hover:text-muted">
+            웨딩 체크리스트
+          </Link>
           <Link href="/reserve" className="underline hover:text-muted">
             사전 예약
           </Link>

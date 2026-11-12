@@ -5,8 +5,9 @@ import { ChevronRight } from "lucide-react";
 import BackHeader from "@/components/layout/BackHeader";
 import PaybackCalculator from "@/components/tools/PaybackCalculator";
 import { PLACE_KIND_LABEL, getAllPlaces } from "@/lib/places";
+import NearbyToday from "@/components/home/NearbyToday";
 
-export const revalidate = 3600;
+export const revalidate = 600;
 
 /** 지역 주소 형식: /area/서울특별시-강남구 */
 async function load(slug: string) {
@@ -44,6 +45,8 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         <Link href="/estimate" className="mt-5 flex h-14 w-full items-center justify-center gap-1.5 rounded-xl bg-brand text-[16px] font-bold text-white">
           {d.sigungu}에서 수거 신청하기 <ChevronRight size={18} />
         </Link>
+
+        <NearbyToday only={{ sido: d.sido, sigungu: d.sigungu }} />
 
         <div className="mt-6">
           <PaybackCalculator />
