@@ -9,10 +9,10 @@ export default function BackHeader() {
       <Logo />
       <Link
         href="/status/lookup"
-        className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-paper px-3.5 text-[13px] font-semibold text-foreground"
+        className="flex h-9 items-center gap-1 rounded-full px-2 text-[13.5px] font-semibold text-foreground underline-offset-4 hover:underline"
       >
-        <ClipboardList size={15} strokeWidth={2} />
-        진행상황 조회
+        <ClipboardList size={17} strokeWidth={1.8} className="text-muted" />
+        내 접수 조회
       </Link>
     </div>
   );
