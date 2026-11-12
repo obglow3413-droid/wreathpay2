@@ -84,9 +84,11 @@ const STEP_LABEL: Record<string, string> = { photo: "사진", eventType: "종류
 export default function EstimateWizard({
   initialBulk = false,
   initialEventType = null,
+  initialPlace = null,
 }: {
   initialBulk?: boolean;
   initialEventType?: EventType | null;
+  initialPlace?: { name: string; address: string } | null;
 }) {
   const router = useRouter();
 
@@ -122,8 +124,8 @@ export default function EstimateWizard({
   const [addressScriptLoaded, setAddressScriptLoaded] = useState(false);
   const addressContainerRef = useRef<HTMLDivElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [placeName, setPlaceName] = useState("");
-  const [address, setAddress] = useState("");
+  const [placeName, setPlaceName] = useState(initialPlace?.name ?? "");
+  const [address, setAddress] = useState(initialPlace?.address ?? "");
   const [addressDetail, setAddressDetail] = useState("");
   const [pickupDate, setPickupDate] = useState(() => daysFromNow(1));
   const [pickupTimeSlot, setPickupTimeSlot] = useState<PickupTimeSlot | null>("시간 협의");

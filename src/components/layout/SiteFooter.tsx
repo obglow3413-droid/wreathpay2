@@ -27,6 +27,9 @@ export default function SiteFooter() {
           <Link href="/about" className="underline hover:text-muted">
             서비스소개
           </Link>
+          <Link href="/places" className="underline hover:text-muted">
+            수거 가능 장소
+          </Link>
           <Link href="/driver" className="underline hover:text-muted">
             수거기사 모집
           </Link>
