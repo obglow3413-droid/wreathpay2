@@ -6,6 +6,7 @@ import Hero from "@/components/home/Hero";
 import LinkShareSection from "@/components/home/LinkShareSection";
 import LiveFeed from "@/components/home/LiveFeed";
 import SimpleSteps from "@/components/home/SimpleSteps";
+import TrustSection from "@/components/home/TrustSection";
 import BulkSection from "@/components/home/BulkSection";
 import FloatingPaybackCta from "@/components/home/FloatingPaybackCta";
 import { ServiceTabProvider } from "@/components/home/ServiceTabContext";
@@ -39,6 +40,11 @@ export default async function HomePage({
         <Reveal>
           <SimpleSteps />
         </Reveal>
+        {demo !== "1" && (
+          <Reveal>
+            <TrustSection />
+          </Reveal>
+        )}
         <LinkShareSection />
         <Reveal>
           <BulkSection />

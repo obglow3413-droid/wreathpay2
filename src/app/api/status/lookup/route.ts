@@ -100,6 +100,15 @@ export async function POST(req: Request) {
       }
     } catch {}
 
+    const reviewed = new Set<string>();
+    try {
+      const ids = (rows ?? []).map((r) => r.id as string);
+      if (ids.length) {
+        const { data: rv } = await supabase.from("reviews").select("request_id").in("request_id", ids);
+        for (const x of rv ?? []) reviewed.add(x.request_id as string);
+      }
+    } catch {}
+
     const items = (rows ?? []).map((r) => {
       const ai = r.ai_estimate as { status?: string; low?: { payback?: number }; high?: { payback?: number } } | null | undefined;
       const aiRange =
@@ -117,6 +126,7 @@ export async function POST(req: Request) {
         aiRange,
         account: accounts.get(r.id as string) ?? null,
         ribbonWanted: r.ribbon_wanted === true,
+        reviewed: reviewed.has(r.id as string),
         ribbon: r.ribbon_wanted === true ? (ribbons.get(r.id as string) ?? null) : null,
       };
     });

@@ -1,34 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  /* 프리미엄 에디토리얼 브랜드 톤 원본 토큰 */
-  --ink: #0a1b16;
-  --forest: #102a22;
-  --ivory: #f6f3ec;
-  --paper: #fffdf8;
-  --brass: #b69255;
-  --sage: #c8d3c5;
-  --text: #1d211f;
-  --muted-tone: #727872;
-  --line: #dcd8cf;
+  /* 브랜드 기본 톤: 웜 크림 + 오렌지 포인트 (홈 celebration 테마와 동일 계열) */
+  --ink: #141211;
+  --forest: #1a1715;
+  --ivory: #ece8e3;
+  --paper: #f7f4f0;
+  --brass: #d9502a;
+  --sage: #ddd7cf;
+  --text: #171412;
+  --muted-tone: #6f6860;
+  --line: #ddd7cf;
 
   --background: var(--ivory);
   --foreground: var(--text);
   --muted: var(--muted-tone);
-  --muted-light: #9aa19b;
+  --muted-light: #9b948b;
   --border: var(--line);
   --surface: var(--paper);
   --white: var(--paper);
   --error: #b1443c;
 
-  /* 메인 CTA/선택 상태 컬러: forest (골드 버튼은 만들지 않음) */
+  /* 메인 CTA/선택 상태 컬러 */
   --brand: var(--forest);
   --brand-dark: var(--ink);
-  --brand-tint: #e7ebe4;
+  --brand-tint: #f3e3da;
 
   /* 반전(어두운) 섹션용 토큰 */
-  --inverse-bg: #0a1b16;
-  --inverse-fg: #f6f3ec;
+  --inverse-bg: #1a1715;
+  --inverse-fg: #f7f4f0;
 }
 
 /*

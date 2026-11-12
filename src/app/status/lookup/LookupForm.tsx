@@ -26,6 +26,7 @@ interface Item {
   account: { bankName: string; last4: string } | null;
   createdAt: string;
   ribbonWanted: boolean;
+  reviewed: boolean;
   ribbon: { count: number | null; photos: string[]; listStatus: string; list: { sender: string; text: string; uncertain?: boolean }[] } | null;
 }
 
@@ -185,6 +186,8 @@ export default function LookupForm() {
                 )}
 
                 <ManageSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
+
+                {(item.status === "collected" || item.status === "settled") && <ReviewBox item={item} phone={lookedPhone} />}
 
                 <RibbonSection item={item} phone={lookedPhone} onChanged={() => fetchItems(phoneRef.current).then(({ ok, json }) => ok && setItems(json.items as Item[]))} />
 
@@ -441,6 +444,59 @@ function ManageSection({ item, phone, onChanged }: { item: Item; phone: string; 
         </div>
       )}
       {!open && error && <p className="mt-1.5 text-[12px] text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function ReviewBox({ item, phone }: { item: Item; phone: string }) {
+  const [done, setDone] = useState(item.reviewed);
+  const [rating, setRating] = useState(5);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  if (done)
+    return <p className="mt-4 rounded-xl bg-brand-tint px-4 py-3 text-[13px] text-muted">소중한 후기 감사합니다. 확인 후 서비스 소개에 반영돼요.</p>;
+  async function submit() {
+    setBusy(true);
+    setErr("");
+    try {
+      const res = await fetch("/api/status/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestNo: item.requestNo, phone, rating, body: text }),
+      });
+      const j = await res.json();
+      if (res.ok || res.status === 409) setDone(true);
+      else setErr(j.error ?? "문제가 생겼어요.");
+    } catch {
+      setErr("네트워크를 확인해 주세요.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <div className="mt-4 rounded-xl border border-border p-4">
+      <p className="text-[14px] font-bold">수거는 어떠셨나요?</p>
+      <div className="mt-2 flex gap-1" role="radiogroup" aria-label="별점">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n}점`} className={`text-[26px] leading-none ${n <= rating ? "text-brass" : "text-sage"}`}>
+            ★
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        maxLength={400}
+        rows={3}
+        placeholder="이용 후기를 남겨주세요 (5자 이상)"
+        className="mt-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] outline-none focus:border-brass"
+      />
+      {err && <p className="mt-1 text-[12.5px] text-error">{err}</p>}
+      <button type="button" disabled={busy || text.trim().length < 5} onClick={submit} className="mt-3 flex h-11 w-full items-center justify-center rounded-lg bg-brand text-[14px] font-semibold text-white disabled:opacity-40">
+        {busy ? "등록 중…" : "후기 남기기"}
+      </button>
+      <p className="mt-2 text-[11.5px] text-muted-light">승인 후 지역·행사 종류와 함께 표시되며, 이름과 연락처는 공개되지 않아요.</p>
     </div>
   );
 }

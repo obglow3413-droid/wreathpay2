@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/admin/schedule", label: "수거 일정 보드" },
   { href: "/admin/settlements", label: "정산 대기" },
   { href: "/admin/ribbons", label: "리본 명단" },
+  { href: "/admin/reviews", label: "고객 후기" },
   { href: "/admin/drivers", label: "기사 지원서" },
   { href: "/admin/partners", label: "업체/파트너" },
   { href: "/admin/members", label: "가입회원" },
