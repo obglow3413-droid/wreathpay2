@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import AppTopBar from "@/components/home/AppTopBar";
-import AppBottomNav from "@/components/layout/AppBottomNav";
 import SiteFooter from "@/components/layout/SiteFooter";
 import Hero from "@/components/home/Hero";
 import LinkShareSection from "@/components/home/LinkShareSection";
@@ -54,7 +53,6 @@ export default async function HomePage({
         <SiteFooter />
       </div>
       <FloatingPaybackCta />
-      <AppBottomNav />
     </ServiceTabProvider>
   );
 }

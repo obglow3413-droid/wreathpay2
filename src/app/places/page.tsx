@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import BackHeader from "@/components/layout/BackHeader";
-import AppBottomNav from "@/components/layout/AppBottomNav";
 import PlaceBrowser from "@/components/places/PlaceBrowser";
 import { getAllPlaces } from "@/lib/places";
 
@@ -15,7 +14,7 @@ export const revalidate = 3600;
 export default async function PlacesPage() {
   const places = await getAllPlaces();
   return (
-    <div className="flex min-h-dvh flex-col pb-24">
+    <div className="flex min-h-dvh flex-col pb-12">
       <BackHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
         <p className="text-[12.5px] font-semibold tracking-wide text-brass">PLACES</p>
@@ -30,7 +29,6 @@ export default async function PlacesPage() {
           장례식장 정보는 보건복지부 &lsquo;장례식장 현황&rsquo; 공공데이터를 바탕으로 한 KKOT PAY의 수거 가능 지역 안내이며(웨딩홀은 KKOT PAY가 직접 정리한 주요 시설), &lsquo;제휴&rsquo; 표시가 없는 시설은 KKOT PAY와 제휴 관계가 아닙니다. 시설 규정에 따라 화환 반출·수거가 제한될 수 있고, 시설 정보는 변경되었을 수 있어요.
         </p>
       </main>
-      <AppBottomNav />
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default function FloatingPaybackCta() {
     <div
       className={`fixed inset-x-0 z-40 px-4 transition-all duration-300 ${
         visible
-          ? "bottom-[calc(4.25rem+env(safe-area-inset-bottom))] opacity-100"
+          ? "bottom-[calc(1rem+env(safe-area-inset-bottom))] opacity-100"
           : "pointer-events-none bottom-10 opacity-0"
       }`}
     >

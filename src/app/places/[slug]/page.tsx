@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, ChevronRight } from "lucide-react";
 import BackHeader from "@/components/layout/BackHeader";
-import AppBottomNav from "@/components/layout/AppBottomNav";
 import { PLACE_KIND_LABEL, getAllPlaces, getPlace } from "@/lib/places";
 
 export const revalidate = 3600;
@@ -34,7 +33,7 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
   ].filter(Boolean);
 
   return (
-    <div className="flex min-h-dvh flex-col pb-24">
+    <div className="flex min-h-dvh flex-col pb-12">
       <BackHeader />
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
         <Link href="/places" className="text-[12.5px] text-muted underline underline-offset-4">
@@ -98,7 +97,6 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
           </section>
         )}
       </main>
-      <AppBottomNav />
     </div>
   );
 }

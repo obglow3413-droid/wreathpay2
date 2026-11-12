@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import BackHeader from "@/components/layout/BackHeader";
 import HowItWorks from "@/components/home/HowItWorks";
 import Faq from "@/components/home/Faq";
-import AppBottomNav from "@/components/layout/AppBottomNav";
 
 export const metadata: Metadata = {
   title: "이용안내",
@@ -11,13 +10,12 @@ export const metadata: Metadata = {
 
 export default function GuidePage() {
   return (
-    <div className="flex min-h-dvh flex-col pb-24">
+    <div className="flex min-h-dvh flex-col pb-12">
       <BackHeader />
       <main className="flex-1">
         <HowItWorks />
         <Faq />
       </main>
-      <AppBottomNav />
     </div>
   );
 }

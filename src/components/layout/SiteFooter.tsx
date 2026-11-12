@@ -23,9 +23,15 @@ export default function SiteFooter() {
             채널톡 상담
           </a>
         </p>
-        <p className="mt-3 space-x-3">
+        <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
           <Link href="/about" className="underline hover:text-muted">
             서비스소개
+          </Link>
+          <Link href="/pricing" className="underline hover:text-muted">
+            시세조회
+          </Link>
+          <Link href="/guide" className="underline hover:text-muted">
+            이용안내
           </Link>
           <Link href="/places" className="underline hover:text-muted">
             수거 가능 장소
@@ -35,6 +41,9 @@ export default function SiteFooter() {
           </Link>
           <Link href="/partner" className="underline hover:text-muted">
             업체·파트너 등록
+          </Link>
+          <Link href="/signup" className="underline hover:text-muted">
+            회원 로그인
           </Link>
         </p>
         <p className="mt-4">© KKOT PAY. All rights reserved.</p>

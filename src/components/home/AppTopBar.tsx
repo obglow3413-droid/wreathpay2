@@ -2,13 +2,21 @@
 
 import Logo from "@/components/layout/Logo";
 
-import { MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { ClipboardList, MessageCircle } from "lucide-react";
 
 export default function AppTopBar() {
   return (
     <header className="flex h-14 items-center justify-between px-5">
       <Logo />
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
+        <Link
+          href="/status/lookup"
+          className="flex h-9 items-center gap-1.5 rounded-full border border-border bg-paper px-3.5 text-[13px] font-semibold text-foreground"
+        >
+          <ClipboardList size={15} strokeWidth={2} />
+          진행상황 조회
+        </Link>
         <a
           href="https://d5dpz.channel.io"
           target="_blank"
