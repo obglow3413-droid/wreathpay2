@@ -12,8 +12,8 @@ const KINDS = [
 const man = (n: number) => (n >= 10000 ? `${(n / 10000).toLocaleString("ko-KR")}만원` : `${n.toLocaleString("ko-KR")}원`);
 
 /** 종류와 개수만 고르면 시세표 기준 예상 페이백 범위를 바로 보여준다(사진 견적 전 참고용). */
-export default function PaybackCalculator() {
-  const [kind, setKind] = useState<(typeof KINDS)[number]["id"]>("funeral");
+export default function PaybackCalculator({ defaultKind = "funeral" }: { defaultKind?: (typeof KINDS)[number]["id"] }) {
+  const [kind, setKind] = useState<(typeof KINDS)[number]["id"]>(defaultKind);
   const [count, setCount] = useState(12);
   const s = suggestPayback(kind, "", count);
   const k = KINDS.find((x) => x.id === kind)!;

@@ -1,3 +1,4 @@
+import Track from "@/components/Track";
 import type { Metadata } from "next";
 import EstimateWizard from "@/components/estimate/EstimateWizard";
 import BackHeader from "@/components/layout/BackHeader";
@@ -33,6 +34,7 @@ export default async function EstimatePage({
       <BackHeader />
       {source === "share" && <SharedLinkBanner />}
       <main className="flex-1">
+        <Track event="estimate_view" />
         <EstimateWizard
           initialBulk={bulk === "1"}
           initialEventType={initialEventType}

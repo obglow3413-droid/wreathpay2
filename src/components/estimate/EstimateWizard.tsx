@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@/lib/track";
 
 import { compressImage } from "@/lib/compressImage";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -182,6 +183,7 @@ export default function EstimateWizard({
         if (cancelled) return;
         if (json?.available && json.estimate) {
           setAiEstimate(json.estimate as PreviewEstimate);
+          track("estimate_shown");
           setAiState("done");
         } else {
           setAiState("idle");
@@ -241,6 +243,7 @@ export default function EstimateWizard({
     const picked = Array.from(files);
     const compressed = await Promise.all(picked.map(compressImage));
     setImages((prev) => [...prev, ...compressed].slice(0, MAX_IMAGES));
+    track("photo_added");
   }
 
   function removeImage(idx: number) {
@@ -341,6 +344,7 @@ export default function EstimateWizard({
       try {
         sessionStorage.setItem(`kkotpay:phone:${data.requestNo}`, customerPhone);
       } catch {}
+      track("submit_done");
       router.push(`/estimate/complete?req=${data.requestNo}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "신청 처리 중 문제가 발생했어요.");

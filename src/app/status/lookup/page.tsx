@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import BackHeader from "@/components/layout/BackHeader";
 import LookupForm from "./LookupForm";
+import Track from "@/components/Track";
 
 export const metadata: Metadata = {
   title: "진행상황 조회",
@@ -16,6 +17,7 @@ export default function LookupPage() {
         <p className="mt-1 text-[13.5px] leading-relaxed text-muted">
           가입 없이, 신청할 때 입력한 휴대폰번호만으로 확인할 수 있어요.
         </p>
+        <Track event="lookup_view" />
         <LookupForm />
       </div>
     </div>

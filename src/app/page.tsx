@@ -7,6 +7,7 @@ import LiveFeed from "@/components/home/LiveFeed";
 import SimpleSteps from "@/components/home/SimpleSteps";
 import TrustSection from "@/components/home/TrustSection";
 import RefCapture from "@/components/home/RefCapture";
+import Track from "@/components/Track";
 import NearbyToday from "@/components/home/NearbyToday";
 import BulkSection from "@/components/home/BulkSection";
 import FloatingPaybackCta from "@/components/home/FloatingPaybackCta";
@@ -53,6 +54,7 @@ export default async function HomePage({
         </Reveal>
       </main>
       <RefCapture />
+      <Track event="home_view" />
       <div className="bg-white pb-24">
         <SiteFooter />
       </div>

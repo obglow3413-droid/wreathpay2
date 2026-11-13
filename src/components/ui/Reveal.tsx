@@ -29,10 +29,16 @@ export default function Reveal({
           observer.disconnect();
         }
       },
-      { threshold: 0.15 }
+      // 조금이라도 화면에 걸리면 바로 보여준다(빠르게 넘기거나 인앱 브라우저에서 놓치지 않도록)
+      { threshold: 0, rootMargin: "0px 0px -6% 0px" }
     );
     observer.observe(node);
-    return () => observer.disconnect();
+    // 안전장치: 관찰이 어떤 이유로든 동작하지 않아도 내용이 빈 채로 남지 않게 한다
+    const failsafe = setTimeout(() => setVisible(true), 3500);
+    return () => {
+      observer.disconnect();
+      clearTimeout(failsafe);
+    };
   }, [visible]);
 
   return (

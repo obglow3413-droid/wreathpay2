@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@/lib/track";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -47,6 +48,7 @@ export default function ReserveForm() {
         try {
           sessionStorage.setItem(`kkotpay:phone:${j.requestNo}`, f.customerPhone);
         } catch {}
+        track("reserve_done");
         router.push(`/estimate/complete?req=${encodeURIComponent(j.requestNo)}`);
       }
     } catch {

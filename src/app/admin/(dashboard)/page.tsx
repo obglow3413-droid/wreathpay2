@@ -3,6 +3,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatKRW } from "@/lib/pricing";
 import MetricCard from "@/components/admin/MetricCard";
 import DashboardTrends from "@/components/admin/DashboardTrends";
+import FunnelStats from "@/components/admin/FunnelStats";
 
 async function getDashboardMetrics() {
   if (!isSupabaseConfigured()) return null;
@@ -108,6 +109,7 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
+      <FunnelStats />
       <DashboardTrends />
     </div>
   );

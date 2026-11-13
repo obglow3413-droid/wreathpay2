@@ -130,6 +130,22 @@ export default function RequestQuickActions({
             {loading === "paybackApprove" ? "처리중" : "페이백승인"}
           </button>
         )}
+        {status === "settled" && (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(
+                  "KKOT PAY를 이용해 주셔서 감사합니다. 이용은 어떠셨나요? 아래에서 휴대폰번호로 조회하면 후기를 남기실 수 있어요.\nhttps://kkotpay.kr/status/lookup"
+                );
+                setDone("후기 요청 문구 복사됨");
+              } catch {}
+            }}
+            className="rounded-md border border-border px-2 py-1 text-[11px] font-semibold text-muted"
+          >
+            후기 요청 복사
+          </button>
+        )}
         {status !== "settled" && (
           <button
             type="button"

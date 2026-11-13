@@ -5,6 +5,7 @@ import { MapPin, ChevronRight } from "lucide-react";
 import BackHeader from "@/components/layout/BackHeader";
 import { PLACE_KIND_LABEL, getAllPlaces, getPlace } from "@/lib/places";
 import NearbyToday from "@/components/home/NearbyToday";
+import Track from "@/components/Track";
 
 export const revalidate = 600;
 
@@ -36,6 +37,7 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
   return (
     <div className="flex min-h-dvh flex-col pb-12">
       <BackHeader />
+      <Track event="place_view" />
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
         <Link href="/places" className="text-[12.5px] text-muted underline underline-offset-4">
           ← 장소 목록
