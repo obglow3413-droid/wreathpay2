@@ -138,6 +138,8 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
   const weekCount = Math.max(feed.weekCount, manual.weekCount);
   const manualAmount = manual.returnedAmount > 0;
   const returnedAmount = manualAmount ? manual.returnedAmount : feed.returnedAmount;
+  // 최근 7일 안에 실제 접수가 없으면 "지금 들어오고 있어요" 대신 지금까지의 실적을 보여준다(없는 접수를 있는 것처럼 보이지 않게)
+  const fresh = demo || feed.weekCount > 0;
 
   return (
     <section className="border-t border-line bg-ivory">
@@ -145,11 +147,13 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
         <div className="md:grid md:grid-cols-[2fr_3fr] md:items-center md:gap-14">
           <div>
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2 shrink-0">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brass opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-brass" />
-              </span>
-              <p className="text-[12.5px] font-semibold tracking-wide text-brass">{demo ? "DEMO" : "LIVE"}</p>
+              {fresh && (
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brass opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-brass" />
+                </span>
+              )}
+              <p className="text-[12.5px] font-semibold tracking-wide text-brass">{demo ? "DEMO" : fresh ? "LIVE" : "RESULT"}</p>
               {demo && (
                 <span className="rounded-full border border-brass px-2 py-0.5 text-[10.5px] font-bold text-brass">
                   예시 데이터 · 실제 접수 현황이 아닙니다
@@ -157,9 +161,19 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
               )}
             </div>
             <h2 className="mt-2 text-[22px] font-extrabold leading-snug md:text-[28px]">
-              지금도 화환 수거
-              <br />
-              신청이 들어오고 있어요
+              {fresh ? (
+                <>
+                  지금도 화환 수거
+                  <br />
+                  신청이 들어오고 있어요
+                </>
+              ) : (
+                <>
+                  이렇게 수거하고
+                  <br />
+                  돌려드리고 있어요
+                </>
+              )}
             </h2>
 
             {/* 실제 데이터가 있는 항목만 노출 (0건·0원은 보여주지 않음) */}
@@ -200,7 +214,7 @@ export default async function LiveFeed({ demo = false }: { demo?: boolean }) {
           <div className="mt-8 md:mt-0">
             {items.length === 0 ? (
               <p className="rounded-2xl border border-line bg-paper px-5 py-10 text-center text-[14px] text-muted">
-                아직 접수된 신청이 없어요. 첫 번째 신청자가 되어보세요!
+                사진 한 장이면 예상 페이백을 바로 확인할 수 있어요.
               </p>
             ) : (
               <LiveTicker items={items} />
