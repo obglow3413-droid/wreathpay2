@@ -7,6 +7,8 @@ import LiveFeed from "@/components/home/LiveFeed";
 import SimpleSteps from "@/components/home/SimpleSteps";
 import TrustSection from "@/components/home/TrustSection";
 import RefCapture from "@/components/home/RefCapture";
+import JsonLd from "@/components/JsonLd";
+import { HOME_DESCRIPTION, HOME_TITLE, serviceLd } from "@/lib/seo";
 import Track from "@/components/Track";
 import NearbyToday from "@/components/home/NearbyToday";
 import BulkSection from "@/components/home/BulkSection";
@@ -15,9 +17,9 @@ import { ServiceTabProvider } from "@/components/home/ServiceTabContext";
 import Reveal from "@/components/ui/Reveal";
 
 export const metadata: Metadata = {
-  title: "KKOT PAY - 세상의 모든 화환을 페이백 합니다.",
-  description:
-    "결혼식·장례식·개업식·기업행사 화환을 사진으로 간편하게 견적받고 현금으로 돌려받으세요.",
+  title: { absolute: HOME_TITLE },
+  description: HOME_DESCRIPTION,
+  alternates: { canonical: "/" },
 };
 
 // 실시간 접수 현황이 항상 최신 데이터로 보이도록 매 요청마다 새로 렌더링
@@ -53,6 +55,7 @@ export default async function HomePage({
           <BulkSection />
         </Reveal>
       </main>
+      <JsonLd data={serviceLd} />
       <RefCapture />
       <Track event="home_view" />
       <div className="bg-white pb-24">

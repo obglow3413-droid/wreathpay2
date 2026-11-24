@@ -24,6 +24,23 @@ export default function SiteFooter() {
           </a>
         </p>
         <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+          <Link href="/landing/funeral" className="underline hover:text-muted">
+            근조화환 수거
+          </Link>
+          <Link href="/landing/wedding" className="underline hover:text-muted">
+            결혼식 화환 수거
+          </Link>
+          <Link href="/landing/opening" className="underline hover:text-muted">
+            개업화환 수거
+          </Link>
+          <Link href="/landing/business" className="underline hover:text-muted">
+            기업행사 화환 수거
+          </Link>
+          <Link href="/info" className="underline hover:text-muted">
+            화환 수거 안내
+          </Link>
+        </p>
+        <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5">
           <Link href="/about" className="underline hover:text-muted">
             서비스소개
           </Link>

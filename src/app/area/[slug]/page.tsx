@@ -6,6 +6,8 @@ import BackHeader from "@/components/layout/BackHeader";
 import PaybackCalculator from "@/components/tools/PaybackCalculator";
 import { PLACE_KIND_LABEL, getAllPlaces } from "@/lib/places";
 import NearbyToday from "@/components/home/NearbyToday";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbLd } from "@/lib/seo";
 
 export const revalidate = 600;
 
@@ -35,6 +37,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   return (
     <div className="flex min-h-dvh flex-col">
       <BackHeader />
+      <JsonLd data={breadcrumbLd([{ name: "홈", path: "/" }, { name: "수거 가능 장소", path: "/places" }, { name: `${d.sigungu} 화환 수거`, path: `/area/${encodeURIComponent(`${d.sido}-${d.sigungu}`)}` }])} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8 pb-12">
         <Link href="/places" className="text-[12.5px] text-muted underline underline-offset-4">← 전체 지역</Link>
         <p className="mt-4 text-[12.5px] font-semibold text-brass">{d.sido}</p>

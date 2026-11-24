@@ -5,8 +5,9 @@ import WreathTypes from "@/components/home/WreathTypes";
 import PaybackCalculator from "@/components/tools/PaybackCalculator";
 
 export const metadata: Metadata = {
-  title: "시세조회",
-  description: "화환 수량별 예상 페이백 금액을 확인해보세요.",
+  title: "화환 수거 시세·페이백 금액 조회",
+  description: "근조화환·축하화환 수량별 예상 페이백 금액표와 계산기. 화환 개수만 고르면 예상 범위를 바로 확인할 수 있어요.",
+  alternates: { canonical: "/pricing" },
 };
 
 export default function PricingPage() {

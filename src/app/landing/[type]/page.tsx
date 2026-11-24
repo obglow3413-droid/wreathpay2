@@ -18,9 +18,10 @@ export async function generateMetadata({
   const content = LANDING_CONTENT[type as LandingSlug];
   if (!content) return {};
   return {
-    title: content.seoTitle,
+    title: { absolute: content.seoTitle.replace("| KKOT PAY", "| KKOT PAY 꽃페이") },
     description: content.seoDescription,
-    openGraph: { title: content.seoTitle, description: content.seoDescription },
+    alternates: { canonical: `/landing/${content.slug}` },
+    openGraph: { title: content.seoTitle, description: content.seoDescription, url: `/landing/${content.slug}` },
   };
 }
 

@@ -6,6 +6,8 @@ import BackHeader from "@/components/layout/BackHeader";
 import { PLACE_KIND_LABEL, getAllPlaces, getPlace } from "@/lib/places";
 import NearbyToday from "@/components/home/NearbyToday";
 import Track from "@/components/Track";
+import JsonLd from "@/components/JsonLd";
+import { breadcrumbLd } from "@/lib/seo";
 
 export const revalidate = 600;
 
@@ -38,6 +40,7 @@ export default async function PlaceDetailPage({ params }: { params: Promise<{ sl
     <div className="flex min-h-dvh flex-col pb-12">
       <BackHeader />
       <Track event="place_view" />
+      <JsonLd data={breadcrumbLd([{ name: "홈", path: "/" }, { name: "수거 가능 장소", path: "/places" }, { name: `${place.sigungu}`, path: `/area/${encodeURIComponent(`${place.sido}-${place.sigungu}`)}` }, { name: place.name, path: `/places/${place.slug}` }])} />
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
         <Link href="/places" className="text-[12.5px] text-muted underline underline-offset-4">
           ← 장소 목록

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { submitIndexNow } from "@/lib/indexnow";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isServiceRoleConfigured } from "@/lib/supabase/config";
 import { RIBBON_PHOTO_BUCKET } from "@/lib/ribbon";
@@ -35,5 +36,13 @@ export async function GET(req: Request) {
   // 요청 제한 카운터·만료된 인증번호 정리
   await supabase.from("rate_limits").delete().lt("window_start", new Date(now.getTime() - 24 * 3600 * 1000).toISOString());
   await supabase.from("otp_codes").delete().lt("expires_at", now.toISOString());
-  return NextResponse.json({ ok: true, boardsDeleted: boards?.length ?? 0, photosDeleted: photos });
+  // 검색엔진 색인 알림(네이버·빙 IndexNow): 새 주소가 생기면 빨리 검색에 잡히도록
+  let indexnow: unknown = null;
+  try {
+    indexnow = await submitIndexNow();
+  } catch (e) {
+    console.error("[indexnow]", e);
+  }
+
+  return NextResponse.json({ ok: true, boardsDeleted: boards?.length ?? 0, photosDeleted: photos, indexnow });
 }
