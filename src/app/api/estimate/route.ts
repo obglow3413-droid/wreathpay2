@@ -7,6 +7,7 @@ import { generateRequestNo } from "@/lib/pricing";
 import { notifyAdmin } from "@/lib/notify";
 import { filesToAiImages, isAiEstimateConfigured, runAiEstimate } from "@/lib/aiEstimate";
 import type { EventType, QuantityRange } from "@/lib/types";
+import { attachWeddingReferral, WP_CODE_RE } from "@/lib/weddingPartners";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -47,6 +48,10 @@ export async function POST(request: Request) {
     // 유입 경로: 장소 페이지(place:<slug>) 또는 친구 추천(ref:<코드>)
     const rawRef = String(formData.get("sourceRef") ?? "").trim().toLowerCase();
     const sourceRef = /^(place|ref):[a-z0-9-]{2,40}$/.test(rawRef) ? rawRef : null;
+    // 웨딩 파트너스 추천 코드(파트너 전용 링크로 들어온 고객) + 진행상황 공유 동의
+    const rawWp = String(formData.get("wpCode") ?? "").trim().toLowerCase();
+    const wpCode = WP_CODE_RE.test(rawWp) ? rawWp : null;
+    const wpConsent = formData.get("wpConsent") === "1";
     const images = formData.getAll("images").filter((f): f is File => f instanceof File);
 
     if (
@@ -220,6 +225,17 @@ export async function POST(request: Request) {
       } catch (e) {
         console.error("[estimate ai]", e);
       }
+    }
+
+    if (wpCode) {
+      await attachWeddingReferral(supabase, {
+        requestId: estimateRequest.id,
+        code: wpCode,
+        customerPhone,
+        consent: wpConsent,
+        placeName,
+        pickupDate,
+      });
     }
 
     await notifyAdmin(`[KKOT PAY] 새 접수가 들어왔어요. (${estimateRequest.request_no} · ${placeName} · ${pickupDate})`);

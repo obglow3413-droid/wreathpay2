@@ -1,7 +1,8 @@
 "use client";
 import { track } from "@/lib/track";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { readWpRef, type StoredWp } from "@/lib/wpClient";
 import { useRouter } from "next/navigation";
 
 const TYPES = [
@@ -19,6 +20,12 @@ export default function ReserveForm() {
   const router = useRouter();
   const [f, setF] = useState({ eventType: "wedding", quantityRange: "10-29", pickupDate: "", pickupTimeSlot: "시간 협의", placeName: "", address: "", customerName: "", customerPhone: "" });
   const [agree, setAgree] = useState(false);
+  const [wpRef, setWpRef] = useState<StoredWp | null>(null);
+  const [wpConsent, setWpConsent] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setWpRef(readWpRef());
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [minDate] = useState(() => ymd(new Date(Date.now() + 86400_000)));
@@ -41,6 +48,10 @@ export default function ReserveForm() {
         const r = localStorage.getItem("kkotpay:ref");
         if (r) fd.append("sourceRef", `ref:${r}`);
       } catch {}
+      if (wpRef) {
+        fd.append("wpCode", wpRef.code);
+        fd.append("wpConsent", wpConsent ? "1" : "0");
+      }
       const res = await fetch("/api/estimate", { method: "POST", body: fd });
       const j = await res.json().catch(() => ({}));
       if (!res.ok) setError(j.error ?? "예약하지 못했어요. 잠시 후 다시 시도해 주세요.");
@@ -120,6 +131,14 @@ export default function ReserveForm() {
           예약 안내 연락을 위한 개인정보 수집·이용에 동의하고, 페이백 금액은 행사 후 실제 수량·상태 확인 뒤 확정된다는 점을 확인했어요.
         </span>
       </label>
+      {wpRef && (
+        <label className="flex items-start gap-2 text-[12.5px] leading-relaxed text-muted">
+          <input type="checkbox" checked={wpConsent} onChange={(e) => setWpConsent(e.target.checked)} className="mt-0.5 h-4 w-4" />
+          <span>
+            (선택) 추천해 주신 웨딩플래너{wpRef.name ? `(${wpRef.name})` : ""}에게 이름 일부(예: 김*수)와 예식일이 표시되는 것에 동의해요. 동의하지 않아도 접수·페이백에는 영향이 없어요.
+          </span>
+        </label>
+      )}
       {error && <p className="text-[13px] text-error">{error}</p>}
       <button type="submit" disabled={!ready || busy} className="h-13 w-full rounded-xl bg-brand py-3.5 text-[15.5px] font-bold text-white disabled:opacity-40">
         {busy ? "예약 중…" : "수거 예약하기"}

@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { href: "/admin/requests", label: "신청목록" },
   { href: "/admin/schedule", label: "수거 일정 보드" },
   { href: "/admin/settlements", label: "정산 대기" },
+  { href: "/admin/profit", label: "건별 수익" },
+  { href: "/admin/wedding-partners", label: "웨딩 파트너스" },
   { href: "/admin/ribbons", label: "리본 명단" },
   { href: "/admin/reviews", label: "고객 후기" },
   { href: "/admin/places", label: "수거 가능 장소" },

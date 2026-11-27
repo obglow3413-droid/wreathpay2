@@ -12,7 +12,7 @@ export const INDEXNOW_KEY = "6f80a074382ae3ba22cd1aa6bfa6aa1b";
 const ENDPOINTS = ["https://searchadvisor.naver.com/indexnow", "https://api.indexnow.org/indexnow"];
 
 export async function allPublicUrls(): Promise<string[]> {
-  const core = ["", "/estimate", "/pricing", "/guide", "/about", "/places", "/reserve", "/reviews", "/wedding-checklist", "/info"];
+  const core = ["", "/estimate", "/pricing", "/guide", "/about", "/places", "/reserve", "/reviews", "/wedding-checklist", "/info", "/wedding-partners"];
   const places = await getAllPlaces();
   const areas = [...new Set(places.map((p) => `${p.sido}-${p.sigungu}`))];
   return [

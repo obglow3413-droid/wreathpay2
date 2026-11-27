@@ -56,6 +56,9 @@ export default function SiteFooter() {
           <Link href="/reserve" className="underline hover:text-muted">
             사전 예약
           </Link>
+          <Link href="/wedding-partners" className="underline hover:text-muted">
+            웨딩 파트너스
+          </Link>
           <Link href="/reviews" className="underline hover:text-muted">
             후기·사례
           </Link>

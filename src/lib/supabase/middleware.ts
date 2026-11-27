@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * /admin 경로 보호를 위한 세션 갱신 로직.
  * 로그인하지 않은 사용자가 /admin/* 에 접근하면 /admin/login 으로 리다이렉트합니다.
+ * 웨딩 파트너 화면(/wedding-partners/dashboard, /api/wp/*)은 세션 갱신만 하고 관리자 검사는 하지 않습니다.
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });

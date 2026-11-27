@@ -1,4 +1,5 @@
 "use client";
+import { readWpRef, type StoredWp } from "@/lib/wpClient";
 import { track } from "@/lib/track";
 
 import { compressImage } from "@/lib/compressImage";
@@ -133,6 +134,13 @@ export default function EstimateWizard({
   const [ribbonWanted, setRibbonWanted] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  // 웨딩 파트너 추천 링크로 들어온 경우: 추천 코드 + (선택) 진행상황 공유 동의
+  const [wpRef, setWpRef] = useState<StoredWp | null>(null);
+  const [wpConsent, setWpConsent] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setWpRef(readWpRef());
+  }, []);
   const [agreements, setAgreements] = useState({
     disposalAuthority: false,
     siteRestriction: false,
@@ -325,6 +333,10 @@ export default function EstimateWizard({
           }
         } catch {}
         if (ref) formData.append("sourceRef", ref);
+      }
+      if (wpRef) {
+        formData.append("wpCode", wpRef.code);
+        formData.append("wpConsent", wpConsent ? "1" : "0");
       }
       formData.append("placeName", placeName);
       formData.append("address", address);
@@ -693,6 +705,13 @@ export default function EstimateWizard({
               onChange={(v) => setAgreements((p) => ({ ...p, privacy: v }))}
               label="개인정보 수집 및 이용에 동의합니다."
             />
+            {wpRef && (
+              <AgreementRow
+                checked={wpConsent}
+                onChange={setWpConsent}
+                label={`(선택) 추천해 주신 웨딩플래너${wpRef.name ? `(${wpRef.name})` : ""}에게 이름 일부(예: 김*수)와 예식일이 표시되는 것에 동의합니다. 동의하지 않아도 접수·페이백에는 영향이 없어요.`}
+              />
+            )}
           </div>
 
           <button
